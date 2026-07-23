@@ -6,12 +6,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const distClientDir = path.join(rootDir, "dist", "client");
 const outDir = path.join(rootDir, "out");
+const BASE = (process.env.BASE_PATH || "/aip-c01-revision-console").replace(/\/$/, "");
 
 await fs.rm(outDir, { recursive: true, force: true });
 await fs.cp(distClientDir, outDir, { recursive: true });
 
 const workerUrl = new URL("../dist/server/index.js", import.meta.url);
 const { default: worker } = await import(workerUrl.href);
+
+function fixHtmlBase(html) {
+  let result = html;
+  result = result.replaceAll('href="/assets/', `href="${BASE}/assets/`);
+  result = result.replaceAll('src="/assets/', `src="${BASE}/assets/`);
+  result = result.replaceAll('import("/assets/', `import("${BASE}/assets/`);
+  result = result.replaceAll('href="/favicon.svg"', `href="${BASE}/favicon.svg"`);
+  result = result.replaceAll('content="/aip-c01-social-card.png"', `content="${BASE}/aip-c01-social-card.png"`);
+  result = result.replaceAll('href="/data/', `href="${BASE}/data/`);
+  result = result.replaceAll('"/assets/', `"${BASE}/assets/`);
+  return result;
+}
 
 async function renderPage(pathname) {
   const req = new Request(`http://localhost${pathname}`, {
@@ -25,7 +38,8 @@ async function renderPage(pathname) {
   if (res.status !== 200) {
     throw new Error(`Failed to render ${pathname}: status ${res.status}`);
   }
-  return await res.text();
+  const rawHtml = await res.text();
+  return fixHtmlBase(rawHtml);
 }
 
 async function writeHtml(pathname, html) {
@@ -35,7 +49,7 @@ async function writeHtml(pathname, html) {
   await fs.writeFile(filePath, html, "utf8");
 }
 
-console.log("Pre-rendering pages for static export...");
+console.log("Pre-rendering pages for static export with base prefix:", BASE);
 
 const homeHtml = await renderPage("/");
 await writeHtml("/", homeHtml);

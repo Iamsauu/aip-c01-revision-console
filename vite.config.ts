@@ -43,7 +43,10 @@ export default defineConfig(async () => {
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
+  const basePath = process.env.BASE_PATH || (process.env.GITHUB_ACTIONS ? "/aip-c01-revision-console/" : "/");
+
   return {
+    base: basePath,
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
