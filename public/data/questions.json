@@ -1,0 +1,1443 @@
+{
+  "schema_version": "1.0.0",
+  "verified_at": "2026-07-23",
+  "provenance": "Original MCQs synthesized from the local AWS-first knowledge base and linked official AWS documentation.",
+  "redistribution_note": "The raw Udemy mock files remain outside public/data and are not read by this generator.",
+  "counts": {
+    "total": 24,
+    "single": 18,
+    "multiple": 6
+  },
+  "items": [
+    {
+      "id": "question-001",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "An application must use one conversational request structure across several supported Amazon Bedrock chat models. Which API is the best default?",
+      "choices": [
+        {
+          "id": "question-001-a",
+          "text": "Converse",
+          "rationale": "Correct. Converse provides a common message interface for supported conversational models."
+        },
+        {
+          "id": "question-001-b",
+          "text": "InvokeModel with one identical JSON body for every model",
+          "rationale": "Incorrect. InvokeModel request bodies remain model and provider specific."
+        },
+        {
+          "id": "question-001-c",
+          "text": "SageMaker InvokeEndpoint",
+          "rationale": "Incorrect. This is for a deployed SageMaker endpoint, not managed Bedrock chat models."
+        },
+        {
+          "id": "question-001-d",
+          "text": "Amazon SQS SendMessage",
+          "rationale": "Incorrect. SQS decouples work but is not a foundation-model inference API."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-001-a"
+      ],
+      "explanation": "Correct. Converse provides a common message interface for supported conversational models.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "model-selection-runtime-apis"
+      ],
+      "service_ids": [
+        "service-bedrock",
+        "service-sdks-and-tools"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Use the Converse API",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Use the Converse API",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-002",
+      "type": "single",
+      "mode": "scenario",
+      "prompt": "One required Bedrock model serves interactive traffic in a fixed Region. Demand rises predictably every weekday and sustained throttling occurs. Which capacity choice best fits?",
+      "choices": [
+        {
+          "id": "question-002-a",
+          "text": "Provisioned Throughput sized from token and request demand",
+          "rationale": "Correct. Predictable sustained demand for one required model is the main provisioned-capacity case."
+        },
+        {
+          "id": "question-002-b",
+          "text": "Unbounded SDK retries",
+          "rationale": "Incorrect. Retries amplify sustained overload and do not create capacity."
+        },
+        {
+          "id": "question-002-c",
+          "text": "Cross-Region inference without checking residency",
+          "rationale": "Incorrect. Cross-Region routing addresses eligible regional capacity and resilience, not a fixed-Region requirement."
+        },
+        {
+          "id": "question-002-d",
+          "text": "A larger CloudWatch log group",
+          "rationale": "Incorrect. Logging capacity does not change model inference capacity."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-002-a"
+      ],
+      "explanation": "Correct. Predictable sustained demand for one required model is the main provisioned-capacity case.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "model-selection-runtime-apis"
+      ],
+      "service_ids": [
+        "service-bedrock",
+        "service-cloudwatch"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Provisioned Throughput for Amazon Bedrock",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Provisioned Throughput for Amazon Bedrock",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-003",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "A runbook assistant answers natural-language symptom queries well but misses exact error codes that exist in indexed chunks. What should be changed first?",
+      "choices": [
+        {
+          "id": "question-003-a",
+          "text": "Use hybrid lexical and vector retrieval, then rerank a sufficient candidate set",
+          "rationale": "Correct. Lexical retrieval preserves exact tokens while vector retrieval covers semantic symptoms."
+        },
+        {
+          "id": "question-003-b",
+          "text": "Increase model temperature",
+          "rationale": "Incorrect. Generation randomness cannot recover candidates that retrieval omitted."
+        },
+        {
+          "id": "question-003-c",
+          "text": "Replace every chunk with a much larger chunk",
+          "rationale": "Incorrect. Larger chunks can reduce retrieval precision and do not guarantee exact-token matching."
+        },
+        {
+          "id": "question-003-d",
+          "text": "Rerank before retrieving candidates",
+          "rationale": "Incorrect. A reranker can only reorder candidates already retrieved."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-003-a"
+      ],
+      "explanation": "Correct. Lexical retrieval preserves exact tokens while vector retrieval covers semantic symptoms.",
+      "domain_ids": [
+        "domain-1",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "rag-knowledge-bases-vector-search"
+      ],
+      "service_ids": [
+        "service-opensearch-service",
+        "service-bedrock-knowledge-bases"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Neural and hybrid search in OpenSearch Serverless",
+          "url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-configure-neural-search.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Neural and hybrid search in OpenSearch Serverless",
+      "source_url": "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-configure-neural-search.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-004",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "Source documents are replaced and deleted during the day, but a knowledge base sometimes cites obsolete versions. Which action directly addresses freshness?",
+      "choices": [
+        {
+          "id": "question-004-a",
+          "text": "Trigger or schedule ingestion and verify the job reaches terminal success",
+          "rationale": "Correct. Source changes are not current in retrieval until synchronization completes successfully."
+        },
+        {
+          "id": "question-004-b",
+          "text": "Fine-tune the foundation model after every document change",
+          "rationale": "Incorrect. Frequently changing factual content belongs in synchronized retrieval, not repeated model training."
+        },
+        {
+          "id": "question-004-c",
+          "text": "Increase output token limits",
+          "rationale": "Incorrect. Output capacity does not update indexed source content."
+        },
+        {
+          "id": "question-004-d",
+          "text": "Hide citations",
+          "rationale": "Incorrect. Removing evidence conceals the symptom rather than fixing stale retrieval."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-004-a"
+      ],
+      "explanation": "Correct. Source changes are not current in retrieval until synchronization completes successfully.",
+      "domain_ids": [
+        "domain-1",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "rag-knowledge-bases-vector-search"
+      ],
+      "service_ids": [
+        "service-bedrock-knowledge-bases",
+        "service-s3"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Knowledge Base data sources",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Knowledge Base data sources",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-005",
+      "type": "multiple",
+      "mode": "scenario",
+      "prompt": "A shared production prompt needs reusable versions, approval evidence, regression testing, staged promotion, and rapid rollback. Which TWO controls are required?",
+      "choices": [
+        {
+          "id": "question-005-a",
+          "text": "Store immutable prompt versions in Bedrock Prompt Management",
+          "rationale": "Correct. Versioned prompt artifacts provide stable references and rollback targets."
+        },
+        {
+          "id": "question-005-b",
+          "text": "Use a release pipeline with tests and an explicit approval gate",
+          "rationale": "Correct. Organizational promotion and approval remain external release controls."
+        },
+        {
+          "id": "question-005-c",
+          "text": "Treat creation of a prompt version as automatic production approval",
+          "rationale": "Incorrect. Versioning alone does not prove review or promotion authorization."
+        },
+        {
+          "id": "question-005-d",
+          "text": "Edit the production prompt in place without retaining the previous version",
+          "rationale": "Incorrect. This removes traceability and a safe rollback target."
+        },
+        {
+          "id": "question-005-e",
+          "text": "Test only whether the prompt is grammatically correct",
+          "rationale": "Incorrect. Regression tests must validate required behavior and output contracts."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-005-a",
+        "question-005-b"
+      ],
+      "explanation": "Correct. Versioned prompt artifacts provide stable references and rollback targets. Correct. Organizational promotion and approval remain external release controls.",
+      "domain_ids": [
+        "domain-1"
+      ],
+      "topic_ids": [
+        "prompt-engineering-management-flows"
+      ],
+      "service_ids": [
+        "service-bedrock-prompt-management",
+        "service-codepipeline",
+        "service-appconfig"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Deploy prompt versions",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-deploy.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "AWS CodePipeline",
+          "url": "https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Deploy prompt versions",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-deploy.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-006",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "A prompt update improves tone but occasionally omits a required JSON field. What is the strongest release control?",
+      "choices": [
+        {
+          "id": "question-006-a",
+          "text": "Validate the schema on a fixed regression set and block promotion when the contract fails",
+          "rationale": "Correct. Deterministic schema checks should gate a required machine-readable contract."
+        },
+        {
+          "id": "question-006-b",
+          "text": "Lower temperature and deploy immediately",
+          "rationale": "Incorrect. Lower randomness cannot guarantee a required field and does not provide release evidence."
+        },
+        {
+          "id": "question-006-c",
+          "text": "Increase the model's output limit",
+          "rationale": "Incorrect. More output capacity does not enforce the JSON schema."
+        },
+        {
+          "id": "question-006-d",
+          "text": "Ask users to retry malformed responses",
+          "rationale": "Incorrect. This shifts a preventable contract failure to users."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-006-a"
+      ],
+      "explanation": "Correct. Deterministic schema checks should gate a required machine-readable contract.",
+      "domain_ids": [
+        "domain-1"
+      ],
+      "topic_ids": [
+        "prompt-engineering-management-flows"
+      ],
+      "service_ids": [
+        "service-bedrock-prompt-management",
+        "service-codepipeline"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Prompt management in Amazon Bedrock",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Prompt management in Amazon Bedrock",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-007",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "A high-risk agent workflow sometimes needs an engineer approval that can take two days. Which pattern preserves state without keeping compute running?",
+      "choices": [
+        {
+          "id": "question-007-a",
+          "text": "A Step Functions Standard callback task with a task token",
+          "rationale": "Correct. The workflow can pause durably and resume from a trusted callback."
+        },
+        {
+          "id": "question-007-b",
+          "text": "A Lambda function that sleeps until approval",
+          "rationale": "Incorrect. Lambda is not designed to wait for a multi-day human decision."
+        },
+        {
+          "id": "question-007-c",
+          "text": "A model loop that repeatedly asks whether approval arrived",
+          "rationale": "Incorrect. Polling wastes tokens and leaves approval control to a probabilistic component."
+        },
+        {
+          "id": "question-007-d",
+          "text": "An SNS notification with no stored workflow state",
+          "rationale": "Incorrect. Notification alone does not preserve or resume the controlled workflow."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-007-a"
+      ],
+      "explanation": "Correct. The workflow can pause durably and resume from a trusted callback.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "agents-tools-mcp-agentcore"
+      ],
+      "service_ids": [
+        "service-step-functions",
+        "service-lambda"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Step Functions callback tasks",
+          "url": "https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html#connect-wait-token",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Step Functions callback tasks",
+      "source_url": "https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html#connect-wait-token",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-008",
+      "type": "multiple",
+      "mode": "troubleshooting",
+      "prompt": "An agent repeatedly calls a failing dependency and consumes tokens without progress. Which TWO controls most directly stop the failure pattern?",
+      "choices": [
+        {
+          "id": "question-008-a",
+          "text": "A maximum cycle count with an explicit terminal state",
+          "rationale": "Correct. A hard bound prevents an unlimited reason-act loop."
+        },
+        {
+          "id": "question-008-b",
+          "text": "A circuit breaker that opens after repeated dependency failures",
+          "rationale": "Correct. The breaker prevents calls while the dependency remains unhealthy."
+        },
+        {
+          "id": "question-008-c",
+          "text": "An unlimited retry policy",
+          "rationale": "Incorrect. Unlimited retries worsen token waste and dependency pressure."
+        },
+        {
+          "id": "question-008-d",
+          "text": "Broader tool permissions",
+          "rationale": "Incorrect. Additional permissions do not repair dependency health and increase risk."
+        },
+        {
+          "id": "question-008-e",
+          "text": "A larger model context window",
+          "rationale": "Incorrect. More context does not create a stop condition."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-008-a",
+        "question-008-b"
+      ],
+      "explanation": "Correct. A hard bound prevents an unlimited reason-act loop. Correct. The breaker prevents calls while the dependency remains unhealthy.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "agents-tools-mcp-agentcore"
+      ],
+      "service_ids": [
+        "service-step-functions",
+        "service-dynamodb"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Step Functions error handling",
+          "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Step Functions error handling",
+      "source_url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-009",
+      "type": "single",
+      "mode": "scenario",
+      "prompt": "Nightly JSON records in S3 must satisfy required-field and non-empty-value rules before inference. Failed records need quarantine and operational metrics. Which service is the best fit?",
+      "choices": [
+        {
+          "id": "question-009-a",
+          "text": "AWS Glue Data Quality in the processing job",
+          "rationale": "Correct. Managed rules can enforce, quarantine, and publish recurring data-quality results."
+        },
+        {
+          "id": "question-009-b",
+          "text": "Manual inspection in SageMaker Data Wrangler every night",
+          "rationale": "Incorrect. Interactive manual preparation does not meet recurring automated enforcement."
+        },
+        {
+          "id": "question-009-c",
+          "text": "A foundation model asked to guess missing values",
+          "rationale": "Incorrect. Probabilistic inference is not a deterministic data-quality gate."
+        },
+        {
+          "id": "question-009-d",
+          "text": "CloudTrail event history",
+          "rationale": "Incorrect. CloudTrail audits API activity but does not validate record completeness."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-009-a"
+      ],
+      "explanation": "Correct. Managed rules can enforce, quarantine, and publish recurring data-quality results.",
+      "domain_ids": [
+        "domain-1"
+      ],
+      "topic_ids": [
+        "data-quality-multimodal-processing"
+      ],
+      "service_ids": [
+        "service-glue",
+        "service-s3",
+        "service-cloudwatch"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "AWS Glue Data Quality",
+          "url": "https://docs.aws.amazon.com/glue/latest/dg/glue-data-quality.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "AWS Glue Data Quality",
+      "source_url": "https://docs.aws.amazon.com/glue/latest/dg/glue-data-quality.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-010",
+      "type": "multiple",
+      "mode": "comparison",
+      "prompt": "A workflow must extract tables from scanned forms and transcribe recorded calls. Which TWO managed services match the modalities?",
+      "choices": [
+        {
+          "id": "question-010-a",
+          "text": "Amazon Textract for document text, forms, and tables",
+          "rationale": "Correct. Textract extracts structured content from documents."
+        },
+        {
+          "id": "question-010-b",
+          "text": "Amazon Transcribe for speech-to-text",
+          "rationale": "Correct. Transcribe processes recorded or streaming speech."
+        },
+        {
+          "id": "question-010-c",
+          "text": "Amazon Macie for audio transcription",
+          "rationale": "Incorrect. Macie discovers sensitive data in S3 objects; it is not a speech recognizer."
+        },
+        {
+          "id": "question-010-d",
+          "text": "Amazon Route 53 for table extraction",
+          "rationale": "Incorrect. Route 53 provides DNS and routing, not document extraction."
+        },
+        {
+          "id": "question-010-e",
+          "text": "AWS WAF for optical character recognition",
+          "rationale": "Incorrect. WAF filters web requests and does not perform OCR."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-010-a",
+        "question-010-b"
+      ],
+      "explanation": "Correct. Textract extracts structured content from documents. Correct. Transcribe processes recorded or streaming speech.",
+      "domain_ids": [
+        "domain-1"
+      ],
+      "topic_ids": [
+        "data-quality-multimodal-processing"
+      ],
+      "service_ids": [
+        "service-textract",
+        "service-transcribe"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "What is Amazon Textract?",
+          "url": "https://docs.aws.amazon.com/textract/latest/dg/what-is.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "What is Amazon Transcribe?",
+          "url": "https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "What is Amazon Textract?",
+      "source_url": "https://docs.aws.amazon.com/textract/latest/dg/what-is.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-011",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "Sensitive identifiers must be detected and masked in live user text before it reaches a model. Which choice best fits the real-time requirement?",
+      "choices": [
+        {
+          "id": "question-011-a",
+          "text": "Runtime preprocessing with Comprehend PII detection or supported Guardrail PII controls",
+          "rationale": "Correct. These controls can act on live text before or during the inference path."
+        },
+        {
+          "id": "question-011-b",
+          "text": "Amazon Macie as a synchronous chat interceptor",
+          "rationale": "Incorrect. Macie is for sensitive-data discovery in S3, not live prompt interception."
+        },
+        {
+          "id": "question-011-c",
+          "text": "CloudTrail after the prompt has already reached the model",
+          "rationale": "Incorrect. Audit evidence after exposure is not preventive redaction."
+        },
+        {
+          "id": "question-011-d",
+          "text": "A larger context window",
+          "rationale": "Incorrect. Context size does not protect sensitive data."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-011-a"
+      ],
+      "explanation": "Correct. These controls can act on live text before or during the inference path.",
+      "domain_ids": [
+        "domain-3"
+      ],
+      "topic_ids": [
+        "safety-privacy-responsible-ai"
+      ],
+      "service_ids": [
+        "service-comprehend",
+        "service-macie",
+        "service-bedrock"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Amazon Comprehend PII detection",
+          "url": "https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "Amazon Bedrock Guardrails",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Amazon Comprehend PII detection",
+      "source_url": "https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-012",
+      "type": "single",
+      "mode": "scenario",
+      "prompt": "A chatbot must return a customer's latest five transaction amounts without fabrication and must never execute write SQL. Which design is safest?",
+      "choices": [
+        {
+          "id": "question-012-a",
+          "text": "Use the model only for intent mapping, then authorize and run an approved parameterized read-only query in application code",
+          "rationale": "Correct. Deterministic code owns authorization, data access, and exact financial values."
+        },
+        {
+          "id": "question-012-b",
+          "text": "Let the model generate and execute arbitrary SQL",
+          "rationale": "Incorrect. Free-form generated SQL is not a safe authorization or write boundary."
+        },
+        {
+          "id": "question-012-c",
+          "text": "Ask the model to remember prior transaction values",
+          "rationale": "Incorrect. Model memory is not the authoritative transaction system."
+        },
+        {
+          "id": "question-012-d",
+          "text": "Use Guardrails alone to guarantee exact amounts",
+          "rationale": "Incorrect. Guardrails address supported safety policies, not deterministic database correctness."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-012-a"
+      ],
+      "explanation": "Correct. Deterministic code owns authorization, data access, and exact financial values.",
+      "domain_ids": [
+        "domain-3"
+      ],
+      "topic_ids": [
+        "safety-privacy-responsible-ai"
+      ],
+      "service_ids": [
+        "service-bedrock",
+        "service-api-gateway",
+        "service-iam"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Amazon Bedrock Guardrails",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "IAM least privilege",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Amazon Bedrock Guardrails",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-013",
+      "type": "multiple",
+      "mode": "scenario",
+      "prompt": "A private workload must invoke Bedrock without public internet access and only from an approved application role. Which TWO controls are necessary?",
+      "choices": [
+        {
+          "id": "question-013-a",
+          "text": "A supported interface VPC endpoint with restrictive endpoint and network policies",
+          "rationale": "Correct. The endpoint provides a private service path and can restrict use."
+        },
+        {
+          "id": "question-013-b",
+          "text": "Least-privilege IAM permission for the approved model and actions",
+          "rationale": "Correct. Private connectivity does not replace authorization."
+        },
+        {
+          "id": "question-013-c",
+          "text": "A public NAT gateway as the only path",
+          "rationale": "Incorrect. That does not satisfy the no-public-path requirement."
+        },
+        {
+          "id": "question-013-d",
+          "text": "No IAM policy because the endpoint is private",
+          "rationale": "Incorrect. Network location alone does not authorize service actions."
+        },
+        {
+          "id": "question-013-e",
+          "text": "Amazon Macie attached to every runtime request",
+          "rationale": "Incorrect. Macie does not establish Bedrock network connectivity or runtime authorization."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-013-a",
+        "question-013-b"
+      ],
+      "explanation": "Correct. The endpoint provides a private service path and can restrict use. Correct. Private connectivity does not replace authorization.",
+      "domain_ids": [
+        "domain-2",
+        "domain-3"
+      ],
+      "topic_ids": [
+        "security-networking-access-control"
+      ],
+      "service_ids": [
+        "service-privatelink",
+        "service-vpc",
+        "service-iam"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "VPC endpoints for Amazon Bedrock",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "IAM least privilege",
+          "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "VPC endpoints for Amazon Bedrock",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-014",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "Employees need federated workforce access to AWS accounts and permission sets. Which identity service is the direct fit?",
+      "choices": [
+        {
+          "id": "question-014-a",
+          "text": "IAM Identity Center",
+          "rationale": "Correct. It manages workforce access, groups, and permission sets across AWS accounts."
+        },
+        {
+          "id": "question-014-b",
+          "text": "Amazon Cognito user pools",
+          "rationale": "Incorrect. Cognito primarily provides application end-user identity, not workforce AWS permission sets."
+        },
+        {
+          "id": "question-014-c",
+          "text": "AWS WAF",
+          "rationale": "Incorrect. WAF filters web requests and is not a workforce identity provider."
+        },
+        {
+          "id": "question-014-d",
+          "text": "Amazon S3 Lifecycle",
+          "rationale": "Incorrect. Lifecycle manages object retention and storage transitions."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-014-a"
+      ],
+      "explanation": "Correct. It manages workforce access, groups, and permission sets across AWS accounts.",
+      "domain_ids": [
+        "domain-2",
+        "domain-3"
+      ],
+      "topic_ids": [
+        "security-networking-access-control"
+      ],
+      "service_ids": [
+        "service-iam-identity-center",
+        "service-cognito"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "What is IAM Identity Center?",
+          "url": "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "What is IAM Identity Center?",
+      "source_url": "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-015",
+      "type": "single",
+      "mode": "scenario",
+      "prompt": "Three models and two prompts must be compared fairly on quality, latency, tokens, and human preference. What should the team do first?",
+      "choices": [
+        {
+          "id": "question-015-a",
+          "text": "Run every candidate combination against the same versioned representative benchmark",
+          "rationale": "Correct. A fixed dataset and controlled settings make comparisons attributable."
+        },
+        {
+          "id": "question-015-b",
+          "text": "Give each model a different convenient sample",
+          "rationale": "Incorrect. Different samples confound the comparison."
+        },
+        {
+          "id": "question-015-c",
+          "text": "Select the model with the lowest token price before measuring quality",
+          "rationale": "Incorrect. Price alone ignores retries, escalation, rework, and business effectiveness."
+        },
+        {
+          "id": "question-015-d",
+          "text": "Deploy every candidate to all users immediately",
+          "rationale": "Incorrect. Offline evaluation should precede a limited production canary."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-015-a"
+      ],
+      "explanation": "Correct. A fixed dataset and controlled settings make comparisons attributable.",
+      "domain_ids": [
+        "domain-1",
+        "domain-3",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "evaluation-testing-quality-gates"
+      ],
+      "service_ids": [
+        "service-bedrock",
+        "service-s3"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Amazon Bedrock evaluations",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Amazon Bedrock evaluations",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-016",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "A RAG assistant produces unsupported answers. Which test best isolates whether candidate retrieval is the problem?",
+      "choices": [
+        {
+          "id": "question-016-a",
+          "text": "Run retrieve-only evaluation and inspect content, metadata, rank, and coverage",
+          "rationale": "Correct. Removing generation isolates retrieval quality."
+        },
+        {
+          "id": "question-016-b",
+          "text": "Change the model, prompt, index, and chunking in one experiment",
+          "rationale": "Incorrect. Multiple simultaneous changes destroy causal attribution."
+        },
+        {
+          "id": "question-016-c",
+          "text": "Measure only API availability",
+          "rationale": "Incorrect. Availability cannot show whether retrieved evidence is relevant."
+        },
+        {
+          "id": "question-016-d",
+          "text": "Increase answer temperature",
+          "rationale": "Incorrect. More randomness cannot diagnose missing evidence."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-016-a"
+      ],
+      "explanation": "Correct. Removing generation isolates retrieval quality.",
+      "domain_ids": [
+        "domain-1",
+        "domain-3",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "evaluation-testing-quality-gates"
+      ],
+      "service_ids": [
+        "service-bedrock-knowledge-bases"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Knowledge Base evaluation metrics",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Knowledge Base evaluation metrics",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-017",
+      "type": "multiple",
+      "mode": "scenario",
+      "prompt": "A chat application has a large stable prompt prefix and users wait too long before seeing the first token. Quality and the model must remain unchanged. Which TWO changes directly help?",
+      "choices": [
+        {
+          "id": "question-017-a",
+          "text": "Use prompt caching for the eligible stable prefix",
+          "rationale": "Correct. Prompt caching can avoid repeated processing of eligible shared prefix content."
+        },
+        {
+          "id": "question-017-b",
+          "text": "Stream output and measure time to first token separately",
+          "rationale": "Correct. Streaming reduces perceived wait even when total generation time is similar."
+        },
+        {
+          "id": "question-017-c",
+          "text": "Increase maximum output tokens substantially",
+          "rationale": "Incorrect. A larger ceiling can increase capacity and cost exposure."
+        },
+        {
+          "id": "question-017-d",
+          "text": "Add unlimited retries",
+          "rationale": "Incorrect. Retries can increase latency and overload."
+        },
+        {
+          "id": "question-017-e",
+          "text": "Disable all latency metrics",
+          "rationale": "Incorrect. Removing evidence makes optimization harder."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-017-a",
+        "question-017-b"
+      ],
+      "explanation": "Correct. Prompt caching can avoid repeated processing of eligible shared prefix content. Correct. Streaming reduces perceived wait even when total generation time is similar.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2",
+        "domain-4"
+      ],
+      "topic_ids": [
+        "cost-latency-throughput-caching"
+      ],
+      "service_ids": [
+        "service-bedrock"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Prompt caching for Amazon Bedrock",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "Use the Converse API",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Prompt caching for Amazon Bedrock",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-018",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "Request count is stable, but tenants send prompts of very different sizes and intermittently throttle. What is the best admission-control unit?",
+      "choices": [
+        {
+          "id": "question-018-a",
+          "text": "Estimated input tokens plus output budget, enforced by a per-tenant token bucket",
+          "rationale": "Correct. Token demand better represents model capacity than request count."
+        },
+        {
+          "id": "question-018-b",
+          "text": "Only requests per minute",
+          "rationale": "Incorrect. Equal request counts can represent very different token demand."
+        },
+        {
+          "id": "question-018-c",
+          "text": "CloudTrail event count",
+          "rationale": "Incorrect. Audit events are not an inference-capacity unit."
+        },
+        {
+          "id": "question-018-d",
+          "text": "Number of S3 objects",
+          "rationale": "Incorrect. Stored object count does not measure an assembled runtime request."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-018-a"
+      ],
+      "explanation": "Correct. Token demand better represents model capacity than request count.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2",
+        "domain-4"
+      ],
+      "topic_ids": [
+        "cost-latency-throughput-caching"
+      ],
+      "service_ids": [
+        "service-bedrock",
+        "service-dynamodb"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "CountTokens API",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_CountTokens.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "CountTokens API",
+      "source_url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_CountTokens.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-019",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "An auditor asks who changed an AWS resource, while an engineer asks why one request was slow. Which mapping is correct?",
+      "choices": [
+        {
+          "id": "question-019-a",
+          "text": "CloudTrail for API audit; X-Ray and correlated metrics for request-path latency",
+          "rationale": "Correct. These services answer different evidence questions."
+        },
+        {
+          "id": "question-019-b",
+          "text": "X-Ray for identity audit; CloudTrail for model quality",
+          "rationale": "Incorrect. X-Ray traces request paths, and CloudTrail does not evaluate semantic quality."
+        },
+        {
+          "id": "question-019-c",
+          "text": "CloudWatch Synthetics for every historical API change",
+          "rationale": "Incorrect. Canaries test deployed paths; they are not the authoritative API audit."
+        },
+        {
+          "id": "question-019-d",
+          "text": "One raw prompt log for both requirements",
+          "rationale": "Incorrect. Raw payload logging creates privacy risk and still may not isolate a distributed latency segment."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-019-a"
+      ],
+      "explanation": "Correct. These services answer different evidence questions.",
+      "domain_ids": [
+        "domain-2",
+        "domain-3",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "observability-troubleshooting"
+      ],
+      "service_ids": [
+        "service-cloudtrail",
+        "service-x-ray",
+        "service-cloudwatch"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "AWS CloudTrail User Guide",
+          "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "AWS X-Ray Developer Guide",
+          "url": "https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "AWS CloudTrail User Guide",
+      "source_url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-020",
+      "type": "single",
+      "mode": "troubleshooting",
+      "prompt": "A GenAI API has latency spikes across retrieval, model invocation, and tools. What evidence design best isolates the slow component?",
+      "choices": [
+        {
+          "id": "question-020-a",
+          "text": "A correlation ID, structured component metrics, and distributed trace segments",
+          "rationale": "Correct. Correlated evidence separates retrieval, model, tool, and application latency."
+        },
+        {
+          "id": "question-020-b",
+          "text": "Only a final total-latency number",
+          "rationale": "Incorrect. End-to-end latency does not identify the responsible component."
+        },
+        {
+          "id": "question-020-c",
+          "text": "Unstructured error strings without request identity",
+          "rationale": "Incorrect. These cannot reliably join events across services."
+        },
+        {
+          "id": "question-020-d",
+          "text": "Provider-internal chain-of-thought logs",
+          "rationale": "Incorrect. Internal reasoning is not the supported operational trace and should not be exposed."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-020-a"
+      ],
+      "explanation": "Correct. Correlated evidence separates retrieval, model, tool, and application latency.",
+      "domain_ids": [
+        "domain-2",
+        "domain-3",
+        "domain-4",
+        "domain-5"
+      ],
+      "topic_ids": [
+        "observability-troubleshooting"
+      ],
+      "service_ids": [
+        "service-x-ray",
+        "service-cloudwatch",
+        "service-cloudwatch-logs"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "AWS X-Ray Developer Guide",
+          "url": "https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "CloudWatch Logs Insights",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "AWS X-Ray Developer Guide",
+      "source_url": "https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-021",
+      "type": "single",
+      "mode": "scenario",
+      "prompt": "A legacy HTTPS webhook needs acknowledgment within two seconds, traffic is bursty, and model output can update a CRM later. Which architecture best fits?",
+      "choices": [
+        {
+          "id": "question-021-a",
+          "text": "API Gateway validates and enqueues to SQS; workers process asynchronously with idempotent CRM updates",
+          "rationale": "Correct. The queue decouples acknowledgment from slow work and absorbs bursts."
+        },
+        {
+          "id": "question-021-b",
+          "text": "Keep the webhook open until the model and CRM both finish",
+          "rationale": "Incorrect. Slow downstream work violates the acknowledgment constraint."
+        },
+        {
+          "id": "question-021-c",
+          "text": "Use EventBridge as a worker-consumed backlog with no queue",
+          "rationale": "Incorrect. EventBridge routes events, while SQS supplies backlog and worker backpressure."
+        },
+        {
+          "id": "question-021-d",
+          "text": "Retry CRM writes without an idempotency key",
+          "rationale": "Incorrect. At-least-once delivery can duplicate side effects."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-021-a"
+      ],
+      "explanation": "Correct. The queue decouples acknowledgment from slow work and absorbs bursts.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "enterprise-integration-cicd"
+      ],
+      "service_ids": [
+        "service-api-gateway",
+        "service-sqs",
+        "service-lambda"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "Amazon SQS Developer Guide",
+          "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "Amazon API Gateway",
+          "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Amazon SQS Developer Guide",
+      "source_url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-022",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "A producer must publish one business event and allow new rule-based consumers to be added without changing producer code. Which service is the best fit?",
+      "choices": [
+        {
+          "id": "question-022-a",
+          "text": "Amazon EventBridge",
+          "rationale": "Correct. Event rules and targets support decoupled routing and fanout."
+        },
+        {
+          "id": "question-022-b",
+          "text": "Amazon SQS as the only destination",
+          "rationale": "Incorrect. SQS is strongest for backlog and worker consumption, not changing rule-based fanout by itself."
+        },
+        {
+          "id": "question-022-c",
+          "text": "A direct synchronous call to every consumer",
+          "rationale": "Incorrect. This tightly couples the producer to current consumers."
+        },
+        {
+          "id": "question-022-d",
+          "text": "Amazon EBS",
+          "rationale": "Incorrect. EBS provides block storage, not event routing."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-022-a"
+      ],
+      "explanation": "Correct. Event rules and targets support decoupled routing and fanout.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "enterprise-integration-cicd"
+      ],
+      "service_ids": [
+        "service-eventbridge",
+        "service-sqs",
+        "service-sns"
+      ],
+      "importance": "Critical",
+      "sources": [
+        {
+          "title": "What is Amazon EventBridge?",
+          "url": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "What is Amazon EventBridge?",
+      "source_url": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-023",
+      "type": "multiple",
+      "mode": "troubleshooting",
+      "prompt": "A 70 GB open-weight model on a SageMaker real-time endpoint fails while downloading and loading, and the initial storage is too small. Which TWO corrections address the stated causes?",
+      "choices": [
+        {
+          "id": "question-023-a",
+          "text": "Provide sufficient endpoint storage for model artifacts and runtime files",
+          "rationale": "Correct. The model cannot load when the attached storage is insufficient."
+        },
+        {
+          "id": "question-023-b",
+          "text": "Set model-download and startup-health timeouts to realistic values after sizing resources",
+          "rationale": "Correct. Large models can require longer legitimate download and initialization time."
+        },
+        {
+          "id": "question-023-c",
+          "text": "Only increase retries from the client",
+          "rationale": "Incorrect. Client retries do not repair endpoint storage or startup configuration."
+        },
+        {
+          "id": "question-023-d",
+          "text": "Reduce CloudTrail retention",
+          "rationale": "Incorrect. Audit retention does not change model loading."
+        },
+        {
+          "id": "question-023-e",
+          "text": "Assume any GPU topology can hold the model",
+          "rationale": "Incorrect. GPU memory and serving topology must also be validated."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-023-a",
+        "question-023-b"
+      ],
+      "explanation": "Correct. The model cannot load when the attached storage is insufficient. Correct. Large models can require longer legitimate download and initialization time.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "sagemaker-custom-model-deployment"
+      ],
+      "service_ids": [
+        "service-sagemaker-ai",
+        "service-ebs"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "SageMaker Large Model Inference",
+          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        },
+        {
+          "title": "Deploy models for inference",
+          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "SageMaker Large Model Inference",
+      "source_url": "https://docs.aws.amazon.com/sagemaker/latest/dg/large-model-inference.html",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "id": "question-024",
+      "type": "single",
+      "mode": "comparison",
+      "prompt": "A required open-weight model is not available through Bedrock, and the team needs a custom container, accelerator selection, and serving configuration. Which platform is the stronger fit?",
+      "choices": [
+        {
+          "id": "question-024-a",
+          "text": "Amazon SageMaker AI",
+          "rationale": "Correct. SageMaker provides control over model artifacts, containers, accelerators, endpoints, and scaling."
+        },
+        {
+          "id": "question-024-b",
+          "text": "Bedrock solely because it has lower operational overhead",
+          "rationale": "Incorrect. Managed simplicity cannot satisfy a model and serving stack that Bedrock does not support."
+        },
+        {
+          "id": "question-024-c",
+          "text": "Amazon Route 53",
+          "rationale": "Incorrect. DNS routing does not host the model."
+        },
+        {
+          "id": "question-024-d",
+          "text": "AWS CloudTrail",
+          "rationale": "Incorrect. CloudTrail records API activity and is not an inference platform."
+        }
+      ],
+      "correct_answer_ids": [
+        "question-024-a"
+      ],
+      "explanation": "Correct. SageMaker provides control over model artifacts, containers, accelerators, endpoints, and scaling.",
+      "domain_ids": [
+        "domain-1",
+        "domain-2"
+      ],
+      "topic_ids": [
+        "sagemaker-custom-model-deployment"
+      ],
+      "service_ids": [
+        "service-sagemaker-ai",
+        "service-bedrock",
+        "service-ecr"
+      ],
+      "importance": "Important",
+      "sources": [
+        {
+          "title": "Deploy models for inference with SageMaker AI",
+          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html",
+          "publisher": "AWS",
+          "verified_at": "2026-07-23"
+        }
+      ],
+      "source_title": "Deploy models for inference with SageMaker AI",
+      "source_url": "https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html",
+      "verified_at": "2026-07-23"
+    }
+  ]
+}

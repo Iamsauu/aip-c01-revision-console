@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "content_version": "2026.07.23-2",
+  "id": "aws-aip-c01",
+  "code": "AIP-C01",
+  "title": "AWS Certified Generative AI Developer - Professional",
+  "status": "active-study-blueprint",
+  "question_count": 75,
+  "scored_question_count": 65,
+  "unscored_question_count": 10,
+  "duration_minutes": 180,
+  "total_questions": 75,
+  "scored_questions": 65,
+  "unscored_questions": 10,
+  "passing_scaled_score": 750,
+  "score_scale": {
+    "minimum": 100,
+    "maximum": 1000
+  },
+  "scaled_score_minimum": 100,
+  "scaled_score_maximum": 1000,
+  "target_unseen_practice_percent": 85,
+  "question_formats": [
+    "multiple-choice",
+    "multiple-response"
+  ],
+  "domain_ids": [
+    "domain-1",
+    "domain-2",
+    "domain-3",
+    "domain-4",
+    "domain-5"
+  ],
+  "coverage": {
+    "domains": 5,
+    "tasks": 20,
+    "skills": 98,
+    "scope_entries": 106
+  },
+  "caveats": [
+    "The official content outline is non-exhaustive and can change.",
+    "Importance labels guide revision depth; they do not claim exact question probability.",
+    "Model support, Regions, quotas, limits, and pricing must be rechecked before production use.",
+    "An 85% unseen-practice target is a safety margin, not a conversion to the AWS scaled score."
+  ],
+  "importance_rubric": {
+    "warning": "Importance is a revision-order aid, not a claim about exact question probability.",
+    "formula": "35% linked domain weight + 30% official skill density + 20% local practice frequency + 15% decision density",
+    "labels": {
+      "critical": "Master implementation, decisions, failures, and tradeoffs.",
+      "high": "Master architecture choices and common failure boundaries.",
+      "supporting": "Know operational role and important comparisons.",
+      "recognition": "Recognize purpose and eliminate distractors."
+    }
+  },
+  "source_title": "Official AIP-C01 exam guide",
+  "source_url": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+  "verified_at": "2026-07-23",
+  "sources": [
+    {
+      "title": "Official AIP-C01 exam guide",
+      "url": "https://docs.aws.amazon.com/aws-certification/latest/ai-professional-01/ai-professional-01.html",
+      "publisher": "AWS",
+      "verified_at": "2026-07-23"
+    },
+    {
+      "title": "AWS Certified Generative AI Developer - Professional exam overview",
+      "url": "https://aws.amazon.com/certification/certified-generative-ai-developer-professional/",
+      "publisher": "AWS",
+      "verified_at": "2026-07-23"
+    }
+  ],
+  "counts": {
+    "domains": 5,
+    "tasks": 20,
+    "skills": 98,
+    "topics": 12,
+    "services": 106,
+    "labs": 6,
+    "questions": 24,
+    "source_recall_cards": 85,
+    "source_scenario_cards": 20,
+    "source_trap_cards": 40,
+    "official_sources": 71
+  }
+}
