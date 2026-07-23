@@ -54,6 +54,7 @@ import type {
   StudyProgress,
   Topic,
 } from "../types";
+import { getAssetPath } from "../utils/path";
 
 type Section = "today" | "learn" | "practice" | "errors";
 type LearnTab = "topics" | "services" | "blueprint" | "labs";
@@ -108,9 +109,10 @@ function objectFromPayload<T>(
 }
 
 async function fetchJson(path: string): Promise<unknown> {
-  const response = await fetch(path, { cache: "no-store" });
+  const targetPath = getAssetPath(path);
+  const response = await fetch(targetPath, { cache: "no-store" });
   if (!response.ok) {
-    throw new Error(`${path} returned ${response.status}.`);
+    throw new Error(`${targetPath} returned ${response.status}.`);
   }
   return response.json() as Promise<unknown>;
 }

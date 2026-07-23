@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { ServiceDetailEntry, StudyProgress } from "../../types";
+import { getAssetPath } from "../../utils/path";
 
 const STORAGE_KEY = "aip-c01-progress-v1";
 
@@ -42,11 +43,12 @@ function categoryId(category: string) {
   return category.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
-function readReviewedIds() {
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (!saved) return new Set<string>();
+function readReviewedServiceIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
   try {
-    const progress = JSON.parse(saved) as StudyProgress;
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return new Set();
+    const progress = JSON.parse(raw) as StudyProgress;
     return new Set(progress.reviewed_service_ids ?? []);
   } catch {
     return new Set<string>();
@@ -61,7 +63,7 @@ function ServiceCatalogCard({
   reviewed: boolean;
 }) {
   return (
-    <Link className="service-catalog-card" href={`/services/${service.id}`}>
+    <Link className="service-catalog-card" href={getAssetPath(`/services/${service.id}`)}>
       <div className="service-card-meta">
         <span>{service.entity_type}</span>
         <span>Tier {service.depth_tier}</span>
@@ -224,7 +226,7 @@ export function ServiceCatalog({
         </div>
         <div className="service-signal-rail">
           {highSignalServices.map((service) => (
-            <Link href={`/services/${service.id}`} key={service.id}>
+            <Link href={getAssetPath(`/services/${service.id}`)} key={service.id}>
               <span>{service.exam_label}</span>
               <strong>
                 {service.practice_bank_mentions?.correct_answer_mentions}/

@@ -10,14 +10,15 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
+import { getAssetPath } from "../../utils/path";
 
 const THEME_KEY = "aip-c01-theme";
 
 const navItems = [
-  { label: "Today", href: "/", icon: House },
-  { label: "Learn", href: "/?view=learn", icon: Books, active: true },
-  { label: "Practice", href: "/?view=practice", icon: CheckSquare },
-  { label: "Errors", href: "/?view=errors", icon: WarningCircle },
+  { label: "Today", href: getAssetPath("/"), icon: House },
+  { label: "Learn", href: getAssetPath("/?view=learn"), icon: Books, active: true },
+  { label: "Practice", href: getAssetPath("/?view=practice"), icon: CheckSquare },
+  { label: "Errors", href: getAssetPath("/?view=errors"), icon: WarningCircle },
 ];
 
 function ServicesLogo() {
@@ -63,7 +64,7 @@ export function ServiceShell({
       </a>
 
       <aside className="services-sidebar">
-        <Link className="services-brand" href="/" aria-label="AIP-C01 home">
+        <Link className="services-brand" href={getAssetPath("/")} aria-label="AIP-C01 home">
           <ServicesLogo />
           <span>
             <strong>AIP-C01</strong>
@@ -101,7 +102,7 @@ export function ServiceShell({
         <header className="services-topbar">
           <Link
             className="services-mobile-brand"
-            href="/"
+            href={getAssetPath("/")}
             aria-label="AIP-C01 home"
           >
             <ServicesLogo />
