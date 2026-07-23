@@ -891,7 +891,7 @@ export function RevisionConsole() {
                 services={filteredServices}
                 onTopic={setSelectedTopic}
                 onService={(service) => {
-                  window.location.assign(`/services/${service.id}`);
+                  window.location.assign(getAssetPath(`/services/${service.id}`));
                 }}
                 onLab={setSelectedLab}
                 onToggleLab={toggleLab}
@@ -1271,7 +1271,7 @@ function LearnScreen({
         ).map(([id, label, count]) =>
           id === "services" ? (
             <Link
-              href="/services"
+              href={getAssetPath("/services")}
               key={id}
               role="tab"
               aria-selected={tab === id}

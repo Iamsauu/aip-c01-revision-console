@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import type { ServiceDetailEntry } from "../../types";
 import { ServiceReviewButton } from "./ServiceReviewButton";
+import { getAssetPath } from "../../utils/path";
 
 const depthLabels: Record<number, string> = {
   1: "Tier 1: cần hiểu cách triển khai và xử lý lỗi",
@@ -65,7 +66,7 @@ export function ServiceDetailView({
   return (
     <article className="service-detail-page">
       <nav className="service-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/services">
+        <Link href={getAssetPath("/services")}>
           <ArrowLeft size={16} />
           Services
         </Link>
@@ -182,7 +183,7 @@ export function ServiceDetailView({
             <div className="service-confusion-links">
               {service.confusion_targets.map((target) =>
                 target.id ? (
-                  <Link href={`/services/${target.id}`} key={target.label}>
+                  <Link href={getAssetPath(`/services/${target.id}`)} key={target.label}>
                     <ArrowsLeftRight size={18} />
                     <span>{target.label}</span>
                     <ArrowRight size={16} />
@@ -210,7 +211,7 @@ export function ServiceDetailView({
           </div>
           <div className="service-pairing-links">
             {service.commonly_paired_with.map((related) => (
-              <Link href={`/services/${related.id}`} key={related.id}>
+              <Link href={getAssetPath(`/services/${related.id}`)} key={related.id}>
                 <span>{related.exam_label}</span>
                 <small>{related.question_count} câu liên quan</small>
               </Link>
@@ -237,7 +238,7 @@ export function ServiceDetailView({
                 </div>
                 <h3>{question.prompt}</h3>
                 <p>{question.explanation}</p>
-                <Link href={`/?view=practice&question=${question.id}`}>
+                <Link href={getAssetPath(`/?view=practice&question=${question.id}`)}>
                   Mở trong Practice
                   <ArrowRight size={16} />
                 </Link>
@@ -296,7 +297,7 @@ export function ServiceDetailView({
 
       <nav className="service-neighbor-nav" aria-label="Service liền kề">
         {previous ? (
-          <Link href={`/services/${previous.id}`} rel="prev">
+          <Link href={getAssetPath(`/services/${previous.id}`)} rel="prev">
             <ArrowLeft size={17} />
             <span>
               <small>Trước</small>
@@ -307,7 +308,7 @@ export function ServiceDetailView({
           <span />
         )}
         {next ? (
-          <Link href={`/services/${next.id}`} rel="next">
+          <Link href={getAssetPath(`/services/${next.id}`)} rel="next">
             <span>
               <small>Tiếp theo</small>
               <strong>{next.exam_label}</strong>

@@ -1,6 +1,7 @@
 import { MagnifyingGlass } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { ServiceShell } from "../components/ServiceShell";
+import { getAssetPath } from "../../utils/path";
 
 export default function ServiceNotFound() {
   return (
@@ -12,7 +13,7 @@ export default function ServiceNotFound() {
           URL có thể đã sai hoặc scope entry đã được đổi tên. Quay lại catalog để
           tìm theo tên AWS hiện tại hoặc exam label.
         </p>
-        <Link href="/services">Về trang Services</Link>
+        <Link href={getAssetPath("/services")}>Về trang Services</Link>
       </div>
     </ServiceShell>
   );
