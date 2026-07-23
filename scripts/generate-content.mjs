@@ -590,10 +590,18 @@ const SERVICE_DOCS = {
     "https://docs.aws.amazon.com/sagemaker/latest/dg/a2i.html",
   "Amazon Bedrock":
     "https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html",
+  "Agents for Amazon Bedrock":
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/agents.html",
   "Bedrock AgentCore":
     "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html",
+  "Bedrock Data Automation":
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/bda.html",
+  "Bedrock Guardrails":
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html",
   "Bedrock Knowledge Bases":
     "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html",
+  "Bedrock Model Evaluation":
+    "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html",
   "Bedrock Prompt Management":
     "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html",
   "Bedrock Prompt Flows / Flows":
@@ -641,6 +649,8 @@ const SERVICE_DOCS = {
     "https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html",
   "AWS Auto Scaling":
     "https://docs.aws.amazon.com/autoscaling/plans/userguide/what-is-aws-auto-scaling.html",
+  "AWS Audit Manager":
+    "https://docs.aws.amazon.com/audit-manager/latest/userguide/aws-generative-ai-best-practices.html",
   "AWS Chatbot":
     "https://docs.aws.amazon.com/chatbot/latest/adminguide/what-is.html",
   "AWS CloudTrail":
@@ -695,6 +705,8 @@ const SERVICE_DOCS = {
     "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html",
   "AWS KMS":
     "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html",
+  "AWS Lake Formation":
+    "https://docs.aws.amazon.com/lake-formation/latest/dg/lf-permissions-overview.html",
   "Amazon Macie":
     "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html",
   "AWS Secrets Manager":
@@ -713,6 +725,30 @@ const SERVICE_DOCS = {
     "https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html",
   "S3 Cross-Region Replication":
     "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html",
+};
+
+const SERVICE_CUE_FILES = [
+  "reference/service-exam-cues.part-core.json",
+  "reference/service-exam-cues.part-ml-dev.json",
+  "reference/service-exam-cues.part-ops-security.json",
+];
+
+const PRACTICE_BANK_MENTIONS = {
+  "AWS Lambda": 46,
+  "Amazon CloudWatch": 29,
+  "Bedrock Guardrails": 23,
+  "Amazon API Gateway": 19,
+  "Bedrock Knowledge Bases": 18,
+  "AWS Step Functions": 13,
+  "Bedrock Model Evaluation": 11,
+  "Bedrock Prompt Management": 8,
+  "Amazon OpenSearch Service": 8,
+  "AWS Glue": 7,
+  "Amazon SageMaker AI": 7,
+  "Bedrock AgentCore": 6,
+  "Amazon Comprehend": 6,
+  "Amazon SQS": 3,
+  "Amazon EventBridge": 3,
 };
 
 const LAB_DEFS = [
@@ -1907,6 +1943,46 @@ function read(relativePath) {
   return fs.readFileSync(path.join(KB_DIR, relativePath), "utf8");
 }
 
+function loadServiceCues() {
+  const cues = {};
+  for (const relativePath of SERVICE_CUE_FILES) {
+    const part = JSON.parse(read(relativePath));
+    if (!part || !Array.isArray(part.items)) {
+      throw new Error(`${relativePath} must contain an items array`);
+    }
+    for (const profile of part.items) {
+      const name = profile.name;
+      if (!name) {
+        throw new Error(`${relativePath} contains an unnamed service profile`);
+      }
+      if (cues[name]) {
+        throw new Error(`Duplicate service exam cues for ${name}`);
+      }
+      for (const field of [
+        "exam_patterns",
+        "strengths",
+        "elimination_signals",
+        "trigger_keywords",
+        "confused_with",
+      ]) {
+        if (!Array.isArray(profile[field])) {
+          throw new Error(`${relativePath}/${name} lacks ${field}`);
+        }
+      }
+      if (
+        profile.exam_patterns.length === 0 ||
+        profile.strengths.length === 0 ||
+        profile.elimination_signals.length < 2 ||
+        profile.trigger_keywords.length < 3
+      ) {
+        throw new Error(`${relativePath}/${name} has incomplete exam cues`);
+      }
+      cues[name] = normalizeVisibleDashes(profile);
+    }
+  }
+  return cues;
+}
+
 function normalizeVisibleDashes(value) {
   if (typeof value === "string") {
     return value.replaceAll("\u2013", "-").replaceAll("\u2014", "-");
@@ -1995,7 +2071,11 @@ function serviceEntityType(name) {
     "Lambda@Edge",
     "DynamoDB Streams",
     "Bedrock AgentCore",
+    "Agents for Amazon Bedrock",
+    "Bedrock Data Automation",
+    "Bedrock Guardrails",
     "Bedrock Knowledge Bases",
+    "Bedrock Model Evaluation",
     "Bedrock Prompt Management",
     "Bedrock Prompt Flows / Flows",
     "SageMaker Clarify",
@@ -2305,6 +2385,7 @@ function inferServiceTopics(category, name, role) {
 
 function parseServices() {
   const lines = read("reference/aws-service-decision-catalog.md").split(/\r?\n/);
+  const serviceCues = loadServiceCues();
   const services = [];
   let category = "";
   for (const line of lines) {
@@ -2334,6 +2415,15 @@ function parseServices() {
         depth === 1 ? "Critical" : depth === 2 ? "Important" : "Awareness",
     };
     const { role: serviceRole, boundary } = splitRoleAndBoundary(role);
+    const cues = serviceCues[name];
+    if (!cues) {
+      throw new Error(`Missing exam-focused service content for ${name}`);
+    }
+    if (cues.category !== category) {
+      throw new Error(
+        `${name} cue category ${cues.category} does not match ${category}`,
+      );
+    }
     const sourceTitle = `${currentServiceLabel(name)} documentation`;
     services.push({
       id: `service-${slug(name)}`,
@@ -2354,10 +2444,24 @@ function parseServices() {
             ? "Architecture-decision service that must be distinguished from nearby alternatives."
             : "Recognition-depth service: know its role and eliminate it when scenario constraints do not match.",
       role: serviceRole,
-      boundary,
-      use_when: [serviceRole],
-      avoid_when: [boundary],
-      confusions: serviceConfusions(name),
+      boundary: cues.elimination_signals[0],
+      technical_boundary: boundary,
+      use_when: cues.exam_patterns,
+      avoid_when: cues.elimination_signals,
+      confusions: cues.confused_with,
+      exam_patterns: cues.exam_patterns,
+      strengths: cues.strengths,
+      elimination_signals: cues.elimination_signals,
+      trigger_keywords: cues.trigger_keywords,
+      confused_with: cues.confused_with,
+      comparison_notes: serviceConfusions(name),
+      practice_bank_mentions: PRACTICE_BANK_MENTIONS[name]
+        ? {
+            correct_answer_mentions: PRACTICE_BANK_MENTIONS[name],
+            total_questions: 150,
+            note: "Local practice-bank signal, not official AWS exam weighting.",
+          }
+        : null,
       exam_role_and_boundary: role,
       topic_ids: inferServiceTopics(category, name, role),
       domain_ids: [],
@@ -2367,6 +2471,15 @@ function parseServices() {
       verified_at: VERIFIED_AT,
       sources: sourceArray(sourceTitle, sourceUrl),
     });
+  }
+  const serviceNames = new Set(services.map((service) => service.name));
+  const unknownCueNames = Object.keys(serviceCues).filter(
+    (name) => !serviceNames.has(name),
+  );
+  if (unknownCueNames.length > 0) {
+    throw new Error(
+      `Service exam cues reference unknown entries: ${unknownCueNames.join(", ")}`,
+    );
   }
   return services;
 }
@@ -2499,6 +2612,93 @@ function buildMcqQuestions(topics, services) {
       verified_at: VERIFIED_AT,
     };
   });
+}
+
+function buildServiceDetails(services, topics, questions) {
+  const servicesById = new Map(services.map((service) => [service.id, service]));
+  const servicesByName = new Map(
+    services.flatMap((service) => [
+      [service.name, service],
+      [service.exam_label, service],
+      [service.current_label, service],
+    ]),
+  );
+  const topicsById = new Map(topics.map((topic) => [topic.id, topic]));
+
+  return services.map((service) => {
+    const relatedQuestions = questions
+      .filter((question) => question.service_ids.includes(service.id))
+      .map((question) => ({
+        id: question.id,
+        type: question.type,
+        mode: question.mode,
+        prompt: question.prompt,
+        explanation: question.explanation,
+        importance: question.importance,
+      }));
+
+    const pairingCounts = new Map();
+    for (const question of questions) {
+      if (!question.service_ids.includes(service.id)) continue;
+      for (const relatedId of question.service_ids) {
+        if (relatedId === service.id) continue;
+        pairingCounts.set(relatedId, (pairingCounts.get(relatedId) ?? 0) + 1);
+      }
+    }
+    const commonlyPairedWith = [...pairingCounts.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 6)
+      .map(([serviceId, questionCount]) => {
+        const related = servicesById.get(serviceId);
+        return {
+          id: serviceId,
+          exam_label: related?.exam_label ?? serviceId,
+          question_count: questionCount,
+        };
+      });
+
+    return {
+      ...service,
+      related_questions: relatedQuestions,
+      related_topics: service.topic_ids
+        .map((topicId) => topicsById.get(topicId))
+        .filter(Boolean)
+        .map((topic) => ({
+          id: topic.id,
+          title: topic.title,
+          short_title: topic.short_title,
+          summary: topic.summary,
+        })),
+      confusion_targets: service.confused_with.map((name) => {
+        const target = servicesByName.get(name);
+        return {
+          label: name,
+          id: target?.id ?? null,
+        };
+      }),
+      commonly_paired_with: commonlyPairedWith,
+    };
+  });
+}
+
+function buildServiceIndex(services) {
+  const detailOnlyFields = new Set([
+    "technical_boundary",
+    "exam_patterns",
+    "strengths",
+    "elimination_signals",
+    "trigger_keywords",
+    "confused_with",
+    "comparison_notes",
+    "practice_bank_mentions",
+    "topic_ids",
+    "skill_ids",
+  ]);
+  return services.map((service) =>
+    Object.fromEntries(
+      Object.entries(service).filter(([key]) => !detailOnlyFields.has(key)),
+    ),
+  );
 }
 
 function recallTopicForNumber(number) {
@@ -2686,7 +2886,7 @@ function validate(data) {
   assertExactCount("tasks", data.tasks, 20);
   assertExactCount("skills", data.skills, 98);
   assertExactCount("topics", data.topics, 12);
-  assertExactCount("services", data.services, 106);
+  assertExactCount("services", data.services, 112);
   assertExactCount("labs", data.labs, 6);
   assertExactCount("source recall cards", data.sourcePractice.recall, 85);
   assertExactCount("source scenario cards", data.sourcePractice.scenarios, 20);
@@ -2738,7 +2938,7 @@ function validate(data) {
     data.certification.coverage.domains !== 5 ||
     data.certification.coverage.tasks !== 20 ||
     data.certification.coverage.skills !== 98 ||
-    data.certification.coverage.scope_entries !== 106
+    data.certification.coverage.scope_entries !== 112
   ) {
     throw new Error("Certification coverage aliases are incomplete");
   }
@@ -2940,12 +3140,13 @@ function main() {
     ];
   }
   const questions = buildMcqQuestions(topics, services);
+  const serviceDetails = buildServiceDetails(services, topics, questions);
   const sources = parseOfficialSources();
   const references = buildReferences();
 
   const certification = {
     schema_version: SCHEMA_VERSION,
-    content_version: "2026.07.23-2",
+    content_version: "2026.07.23-3",
     id: "aws-aip-c01",
     code: "AIP-C01",
     title: "AWS Certified Generative AI Developer - Professional",
@@ -3084,7 +3285,18 @@ function main() {
         "2": "architecture-decision",
         "3": "recognition",
       },
-      items: services,
+      items: buildServiceIndex(services),
+    }),
+  );
+  files.push(
+    writeJson("service-details.json", {
+      schema_version: SCHEMA_VERSION,
+      verified_at: VERIFIED_AT,
+      provenance:
+        "Exam-focused profiles synthesized from the local AWS knowledge base, original public practice questions, and the 150-question local pattern analysis.",
+      practice_bank_note:
+        "Mention counts are local study signals, not official AWS exam weighting.",
+      items: serviceDetails,
     }),
   );
   files.push(

@@ -57,6 +57,7 @@ export type Topic = {
 
 export type ServiceEntry = {
   id: string;
+  name?: string;
   exam_label: string;
   current_label?: string;
   aliases?: string[];
@@ -70,10 +71,59 @@ export type ServiceEntry = {
   use_when?: string[];
   avoid_when?: string[];
   confusions?: string[];
+  topic_ids?: string[];
   domain_ids?: string[];
   skill_ids?: string[];
   sources: Source[];
   verified_at?: string;
+};
+
+export type PracticeBankMentions = {
+  correct_answer_mentions: number;
+  total_questions: number;
+  note: string;
+};
+
+export type ServiceQuestionSummary = {
+  id: string;
+  type: "single" | "multiple";
+  mode: "recall" | "scenario" | "comparison" | "troubleshooting";
+  prompt: string;
+  explanation: string;
+  importance: Importance;
+};
+
+export type ServiceTopicSummary = {
+  id: string;
+  title: string;
+  short_title?: string;
+  summary: string;
+};
+
+export type ServiceRelationship = {
+  id: string;
+  exam_label: string;
+  question_count: number;
+};
+
+export type ServiceConfusionTarget = {
+  label: string;
+  id: string | null;
+};
+
+export type ServiceDetailEntry = ServiceEntry & {
+  technical_boundary: string;
+  exam_patterns: string[];
+  strengths: string[];
+  elimination_signals: string[];
+  trigger_keywords: string[];
+  confused_with: string[];
+  comparison_notes: string[];
+  practice_bank_mentions: PracticeBankMentions | null;
+  related_questions: ServiceQuestionSummary[];
+  related_topics: ServiceTopicSummary[];
+  confusion_targets: ServiceConfusionTarget[];
+  commonly_paired_with: ServiceRelationship[];
 };
 
 export type AnswerChoice = {

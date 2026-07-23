@@ -2,6 +2,7 @@
 
 import {
   ArrowCounterClockwise,
+  ArrowLeft,
   ArrowSquareOut,
   BookOpenText,
   Books,
@@ -28,6 +29,9 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { Dialog, Theme } from "@radix-ui/themes";
+import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   useCallback,
   useEffect,
@@ -375,6 +379,34 @@ export function RevisionConsole() {
   }, [theme]);
 
   useEffect(() => {
+    if (!selectedTopic) return;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    document.getElementById("topic-detail-title")?.focus();
+  }, [selectedTopic]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
+    const questionId = params.get("question");
+    const frame = window.requestAnimationFrame(() => {
+      if (
+        view === "today" ||
+        view === "learn" ||
+        view === "practice" ||
+        view === "errors"
+      ) {
+        setSection(view);
+      }
+      if (questionId) {
+        setSection("practice");
+        setPracticeMode("mixed");
+        setActiveQuestionId(questionId);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function load() {
@@ -717,7 +749,10 @@ export function RevisionConsole() {
                 <button
                   key={item.id}
                   className={section === item.id ? "active" : ""}
-                  onClick={() => setSection(item.id)}
+                  onClick={() => {
+                    setSelectedTopic(null);
+                    setSection(item.id);
+                  }}
                   aria-current={section === item.id ? "page" : undefined}
                 >
                   <Icon size={19} weight={section === item.id ? "fill" : "regular"} />
@@ -761,14 +796,20 @@ export function RevisionConsole() {
             </div>
             <div className="header-title">
               <span className="eyebrow">
-                AWS Certified Generative AI Developer Professional
+                {selectedTopic
+                  ? "Knowledge map"
+                  : "AWS Certified Generative AI Developer Professional"}
               </span>
-              <h1>
-                {section === "today" && "Today"}
-                {section === "learn" && "Knowledge map"}
-                {section === "practice" && "Practice"}
-                {section === "errors" && "Error notebook"}
-              </h1>
+              {selectedTopic ? (
+                <div className="header-context-title">Topic detail</div>
+              ) : (
+                <h1>
+                  {section === "today" && "Today"}
+                  {section === "learn" && "Knowledge map"}
+                  {section === "practice" && "Practice"}
+                  {section === "errors" && "Error notebook"}
+                </h1>
+              )}
             </div>
             <div className="topbar-actions">
               <button
@@ -808,7 +849,18 @@ export function RevisionConsole() {
               </div>
             )}
 
-            {section === "today" && (
+            {selectedTopic && (
+              <TopicDetailPage
+                topic={selectedTopic}
+                reviewed={Boolean(
+                  progress?.reviewed_topic_ids.includes(selectedTopic.id),
+                )}
+                onBack={() => setSelectedTopic(null)}
+                onReviewed={() => markTopicReviewed(selectedTopic.id)}
+              />
+            )}
+
+            {!selectedTopic && section === "today" && (
               <TodayScreen
                 data={data}
                 progress={progress}
@@ -821,7 +873,7 @@ export function RevisionConsole() {
               />
             )}
 
-            {section === "learn" && (
+            {!selectedTopic && section === "learn" && (
               <LearnScreen
                 data={data}
                 progress={progress}
@@ -836,13 +888,15 @@ export function RevisionConsole() {
                 topics={filteredTopics}
                 services={filteredServices}
                 onTopic={setSelectedTopic}
-                onService={setSelectedService}
+                onService={(service) => {
+                  window.location.assign(`/services/${service.id}`);
+                }}
                 onLab={setSelectedLab}
                 onToggleLab={toggleLab}
               />
             )}
 
-            {section === "practice" && (
+            {!selectedTopic && section === "practice" && (
               <PracticeScreen
                 questions={practiceQuestions}
                 activeQuestion={activeQuestion}
@@ -865,7 +919,7 @@ export function RevisionConsole() {
               />
             )}
 
-            {section === "errors" && (
+            {!selectedTopic && section === "errors" && (
               <ErrorsScreen
                 data={data}
                 attempts={attemptMap}
@@ -890,7 +944,10 @@ export function RevisionConsole() {
             <button
               key={item.id}
               className={section === item.id ? "active" : ""}
-              onClick={() => setSection(item.id)}
+              onClick={() => {
+                setSelectedTopic(null);
+                setSection(item.id);
+              }}
               aria-current={section === item.id ? "page" : undefined}
             >
               <Icon size={20} weight={section === item.id ? "fill" : "regular"} />
@@ -899,22 +956,6 @@ export function RevisionConsole() {
           );
         })}
       </nav>
-
-      <TopicDialog
-        topic={selectedTopic}
-        open={Boolean(selectedTopic)}
-        onOpenChange={(open) => {
-          if (!open) setSelectedTopic(null);
-        }}
-        reviewed={Boolean(
-          selectedTopic &&
-            progress?.reviewed_topic_ids.includes(selectedTopic.id),
-        )}
-        onReviewed={() => {
-          if (!selectedTopic) return;
-          markTopicReviewed(selectedTopic.id);
-        }}
-      />
 
       <ServiceDialog
         service={selectedService}
@@ -1225,18 +1266,31 @@ function LearnScreen({
             ["blueprint", "Blueprint", 98],
             ["labs", "Labs", data.labs.length],
           ] as Array<[LearnTab, string, number]>
-        ).map(([id, label, count]) => (
-          <button
-            key={id}
-            role="tab"
-            aria-selected={tab === id}
-            className={tab === id ? "active" : ""}
-            onClick={() => setTab(id)}
-          >
-            {label}
-            <span>{count}</span>
-          </button>
-        ))}
+        ).map(([id, label, count]) =>
+          id === "services" ? (
+            <Link
+              href="/services"
+              key={id}
+              role="tab"
+              aria-selected={tab === id}
+              className={tab === id ? "active" : ""}
+            >
+              {label}
+              <span>{count}</span>
+            </Link>
+          ) : (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={tab === id}
+              className={tab === id ? "active" : ""}
+              onClick={() => setTab(id)}
+            >
+              {label}
+              <span>{count}</span>
+            </button>
+          ),
+        )}
       </div>
 
       {(tab === "topics" || tab === "services") && (
@@ -1900,52 +1954,109 @@ function ErrorsScreen({
   );
 }
 
-function TopicDialog({
+function TopicDetailPage({
   topic,
-  open,
-  onOpenChange,
   reviewed,
+  onBack,
   onReviewed,
 }: {
-  topic: Topic | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  topic: Topic;
   reviewed: boolean;
+  onBack: () => void;
   onReviewed: () => void;
 }) {
-  if (!topic) return null;
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content className="detail-dialog" maxWidth="760px">
-        <div className="dialog-heading">
-          <div>
-            <StudyDepth importance={topic.importance} />
-            <Dialog.Title>{topic.title}</Dialog.Title>
-            <Dialog.Description>{topic.summary}</Dialog.Description>
+    <article className="topic-detail-page" aria-labelledby="topic-detail-title">
+      <button className="topic-detail-back" onClick={onBack}>
+        <ArrowLeft size={17} aria-hidden="true" />
+        Back to topics
+      </button>
+
+      <header className="topic-detail-hero">
+        <div className="topic-detail-hero-copy">
+          <StudyDepth importance={topic.importance} />
+          <h1 id="topic-detail-title" tabIndex={-1}>
+            {topic.title}
+          </h1>
+          <p>{topic.summary}</p>
+          <div className="topic-detail-meta" aria-label="Topic coverage">
+            <span>
+              <strong>{topic.skill_ids?.length ?? 0}</strong> official skills
+            </span>
+            <span>
+              <strong>{topic.service_ids?.length ?? 0}</strong> related services
+            </span>
           </div>
-          <Dialog.Close>
-            <button className="icon-button" aria-label="Close topic">
-              <X size={19} />
-            </button>
-          </Dialog.Close>
         </div>
-        <div className="detail-section">
-          <p className="eyebrow">Why this matters</p>
-          <p>{topic.why_it_matters || topic.importance_reason}</p>
+        <div className="topic-detail-actions">
+          <button
+            className={reviewed ? "secondary-button complete" : "primary-button"}
+            onClick={onReviewed}
+            disabled={reviewed}
+          >
+            <Check size={16} />
+            {reviewed ? "Reviewed" : "Mark reviewed"}
+          </button>
+          <SourceLink source={sourceFor(topic)} />
         </div>
-        <DetailList title="Decision rules" items={topic.decision_rules} />
-        <DetailList title="Key knowledge" items={topic.key_points} />
-        <DetailList title="Failure modes" items={topic.failure_modes} danger />
-        <FullGuide
-          title="Open the complete topic guide"
+      </header>
+
+      <section
+        className="topic-detail-essentials"
+        aria-labelledby="topic-essentials-title"
+      >
+        <div className="topic-detail-section-heading">
+          <div>
+            <p className="eyebrow">Decision essentials</p>
+            <h2 id="topic-essentials-title">Review before the full guide</h2>
+          </div>
+          <p>
+            Use these constraints to eliminate weak answers before comparing
+            implementation details.
+          </p>
+        </div>
+        <div className="topic-detail-essential-grid">
+          <section className="topic-detail-panel">
+            <h3>Why this matters</h3>
+            <p>{topic.why_it_matters || topic.importance_reason}</p>
+          </section>
+          <TopicDetailList
+            title="Decision rules"
+            items={topic.decision_rules}
+          />
+          <TopicDetailList title="Key knowledge" items={topic.key_points} />
+          <TopicDetailList
+            title="Failure modes"
+            items={topic.failure_modes}
+            danger
+          />
+        </div>
+      </section>
+
+      <section
+        className="topic-detail-guide"
+        aria-labelledby="topic-guide-title"
+      >
+        <div className="topic-detail-guide-heading">
+          <BookOpenText size={22} aria-hidden="true" />
+          <div>
+            <p className="eyebrow">Complete topic guide</p>
+            <h2 id="topic-guide-title">Study the full decision model</h2>
+          </div>
+        </div>
+        <MarkdownReader
           content={topic.content_markdown}
+          variant="page"
         />
+      </section>
+
+      <section className="topic-detail-sources">
         <SourceRegistry sources={topic.sources} />
-        <div className="dialog-footer">
-          <span>
-            {topic.skill_ids?.length ?? 0} official skills,{" "}
-            {topic.service_ids?.length ?? 0} related services
-          </span>
+        <div className="topic-detail-footer">
+          <p>
+            Recheck the AWS sources when model support, Regions, APIs, quotas,
+            or pricing change.
+          </p>
           <button
             className={reviewed ? "secondary-button complete" : "primary-button"}
             onClick={onReviewed}
@@ -1955,8 +2066,37 @@ function TopicDialog({
             {reviewed ? "Reviewed" : "Mark reviewed"}
           </button>
         </div>
-      </Dialog.Content>
-    </Dialog.Root>
+      </section>
+    </article>
+  );
+}
+
+function TopicDetailList({
+  title,
+  items,
+  danger = false,
+}: {
+  title: string;
+  items: string[];
+  danger?: boolean;
+}) {
+  if (!items?.length) return null;
+  return (
+    <section className={`topic-detail-panel ${danger ? "danger" : ""}`}>
+      <h3>{title}</h3>
+      <ul>
+        {items.map((item, index) => (
+          <li key={`${title}-${index}`}>
+            {danger ? (
+              <WarningCircle size={17} aria-hidden="true" />
+            ) : (
+              <Check size={17} aria-hidden="true" />
+            )}
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -2137,8 +2277,55 @@ function FullGuide({
         <span>{title}</span>
         <CaretDown size={16} aria-hidden="true" />
       </summary>
-      <pre>{content}</pre>
+      <MarkdownReader content={content} />
     </details>
+  );
+}
+
+function MarkdownReader({
+  content,
+  variant = "embedded",
+}: {
+  content?: string;
+  variant?: "embedded" | "page";
+}) {
+  if (!content?.trim()) {
+    return (
+      <div className={`markdown-reader markdown-reader-${variant}`}>
+        <p>Full guide content is not available.</p>
+      </div>
+    );
+  }
+
+  const renderedContent =
+    variant === "page" ? content.replace(/^#\s+.+\r?\n+/, "") : content;
+
+  return (
+    <div className={`markdown-reader markdown-reader-${variant}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ children }) => <h2>{children}</h2>,
+          h2: ({ children }) =>
+            variant === "page" ? <h2>{children}</h2> : <h3>{children}</h3>,
+          h3: ({ children }) =>
+            variant === "page" ? <h3>{children}</h3> : <h4>{children}</h4>,
+          table: ({ children }) => (
+            <div className="markdown-table">
+              <table>{children}</table>
+            </div>
+          ),
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noreferrer">
+              <span>{children}</span>
+              <ArrowSquareOut size={13} aria-hidden="true" />
+            </a>
+          ),
+        }}
+      >
+        {renderedContent}
+      </ReactMarkdown>
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "content_version": "2026.07.23-2",
+  "content_version": "2026.07.23-3",
   "id": "aws-aip-c01",
   "code": "AIP-C01",
   "title": "AWS Certified Generative AI Developer - Professional",
@@ -35,7 +35,7 @@
     "domains": 5,
     "tasks": 20,
     "skills": 98,
-    "scope_entries": 106
+    "scope_entries": 112
   },
   "caveats": [
     "The official content outline is non-exhaustive and can change.",
@@ -75,7 +75,7 @@
     "tasks": 20,
     "skills": 98,
     "topics": 12,
-    "services": 106,
+    "services": 112,
     "labs": 6,
     "questions": 24,
     "source_recall_cards": 85,

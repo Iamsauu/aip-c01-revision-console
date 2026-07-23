@@ -8,13 +8,13 @@ async function readJson(name) {
   return JSON.parse(await readFile(new URL(name, dataRoot), "utf8"));
 }
 
-async function render() {
+async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${pathname}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -42,18 +42,26 @@ test("server-renders the revision console entry state", async () => {
 });
 
 test("JSON content represents the full published scope snapshot", async () => {
-  const [certification, domainsPayload, topicsPayload, servicesPayload, labsPayload] =
-    await Promise.all([
+  const [
+    certification,
+    domainsPayload,
+    topicsPayload,
+    servicesPayload,
+    serviceDetailsPayload,
+    labsPayload,
+  ] = await Promise.all([
       readJson("certification.json"),
       readJson("domains.json"),
       readJson("topics.json"),
       readJson("services.json"),
+      readJson("service-details.json"),
       readJson("labs.json"),
     ]);
 
   const domains = domainsPayload.items;
   const topics = topicsPayload.items;
   const services = servicesPayload.items;
+  const serviceDetails = serviceDetailsPayload.items;
   const labs = labsPayload.items;
   const tasks = domains.flatMap((domain) => domain.tasks);
   const skills = tasks.flatMap((task) => task.skills);
@@ -62,13 +70,14 @@ test("JSON content represents the full published scope snapshot", async () => {
   assert.equal(tasks.length, 20);
   assert.equal(skills.length, 98);
   assert.equal(topics.length, 12);
-  assert.equal(services.length, 106);
+  assert.equal(services.length, 112);
+  assert.equal(serviceDetails.length, 112);
   assert.equal(labs.length, 6);
   assert.deepEqual(certification.coverage, {
     domains: 5,
     tasks: 20,
     skills: 98,
-    scope_entries: 106,
+    scope_entries: 112,
   });
 
   for (const item of [...domains, ...skills, ...topics, ...services, ...labs]) {
@@ -82,6 +91,37 @@ test("JSON content represents the full published scope snapshot", async () => {
       );
     }
   }
+
+  for (const service of serviceDetails) {
+    assert.ok(service.exam_patterns.length >= 1, `${service.id} lacks patterns`);
+    assert.ok(service.strengths.length >= 1, `${service.id} lacks strengths`);
+    assert.ok(
+      service.elimination_signals.length >= 2,
+      `${service.id} lacks conditional elimination signals`,
+    );
+    assert.ok(
+      service.trigger_keywords.length >= 3,
+      `${service.id} lacks trigger keywords`,
+    );
+  }
+});
+
+test("services catalog and detail routes render as separate pages", async () => {
+  const catalogResponse = await render("/services");
+  assert.equal(catalogResponse.status, 200);
+  const catalogHtml = await catalogResponse.text();
+  assert.match(catalogHtml, /Nhìn constraint, chọn đúng service/);
+  assert.match(catalogHtml, /Bedrock Guardrails/);
+
+  const detailResponse = await render("/services/service-bedrock-guardrails");
+  assert.equal(detailResponse.status, 200);
+  const detailHtml = await detailResponse.text();
+  assert.match(detailHtml, /<title>Bedrock Guardrails \| AIP-C01 Revision Console<\/title>/i);
+  assert.match(detailHtml, /Red flag có điều kiện/);
+  assert.match(detailHtml, /prompt attack detection/);
+
+  const missingResponse = await render("/services/service-does-not-exist");
+  assert.equal(missingResponse.status, 404);
 });
 
 test("practice JSON is original, source-backed, and MCQ-ready", async () => {
