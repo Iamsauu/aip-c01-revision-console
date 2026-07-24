@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const dataRoot = new URL("../public/data/", import.meta.url);
+const staticRoot = new URL("../out/", import.meta.url);
 
 async function readJson(name) {
   return JSON.parse(await readFile(new URL(name, dataRoot), "utf8"));
@@ -164,6 +165,35 @@ test("services catalog and detail routes render as separate pages", async () => 
 
   const missingResponse = await render("/services/service-does-not-exist");
   assert.equal(missingResponse.status, 404);
+});
+
+test("static service pages preserve the GitHub Pages base path", async () => {
+  const html = await readFile(
+    new URL("services/service-emr/index.html", staticRoot),
+    "utf8",
+  );
+  const anchors = [...html.matchAll(/<a\b[^>]*\shref="([^"]+)"/g)];
+
+  assert.ok(anchors.length > 0, "The EMR export should contain navigation links");
+  for (const [, href] of anchors) {
+    if (href.startsWith("/") && !href.startsWith("//")) {
+      assert.match(
+        href,
+        /^\/aip-c01-revision-console(?:\/|$|\?)/,
+        `Static internal link is missing the Pages base path: ${href}`,
+      );
+    }
+  }
+
+  assert.doesNotMatch(html, /\\"href\\":\\"\/services(?:\/|\\")/);
+  assert.doesNotMatch(
+    html,
+    /\/aip-c01-revision-console\/aip-c01-revision-console\//,
+  );
+  assert.match(
+    html,
+    /\\"href\\":\\"\/aip-c01-revision-console\/services\/service-glue/,
+  );
 });
 
 test("practice JSON is original, source-backed, and MCQ-ready", async () => {

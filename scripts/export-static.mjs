@@ -15,14 +15,22 @@ const workerUrl = new URL("../dist/server/index.js", import.meta.url);
 const { default: worker } = await import(workerUrl.href);
 
 function fixHtmlBase(html) {
+  const placeholder = "__STATIC_EXPORT_BASE__";
   let result = html;
-  result = result.replaceAll('href="/assets/', `href="${BASE}/assets/`);
-  result = result.replaceAll('src="/assets/', `src="${BASE}/assets/`);
+
+  result = result.replaceAll(`href="${BASE}/`, `href="${placeholder}/`);
+  result = result.replaceAll(`src="${BASE}/`, `src="${placeholder}/`);
+  result = result.replaceAll(
+    `\\"href\\":\\"${BASE}/`,
+    `\\"href\\":\\"${placeholder}/`,
+  );
+  result = result.replaceAll('href="/', `href="${BASE}/`);
+  result = result.replaceAll('src="/', `src="${BASE}/`);
+  result = result.replaceAll('\\"href\\":\\"/', `\\"href\\":\\"${BASE}/`);
   result = result.replaceAll('import("/assets/', `import("${BASE}/assets/`);
-  result = result.replaceAll('href="/favicon.svg"', `href="${BASE}/favicon.svg"`);
   result = result.replaceAll('content="/aip-c01-social-card.png"', `content="${BASE}/aip-c01-social-card.png"`);
-  result = result.replaceAll('href="/data/', `href="${BASE}/data/`);
   result = result.replaceAll('"/assets/', `"${BASE}/assets/`);
+  result = result.replaceAll(placeholder, BASE);
   return result;
 }
 
