@@ -47,6 +47,7 @@ import type {
   Importance,
   KnowledgeData,
   Lab,
+  PrivatePracticeBank,
   Question,
   QuestionAttempt,
   ServiceEntry,
@@ -55,10 +56,23 @@ import type {
   Topic,
 } from "../types";
 import { getAssetPath } from "../utils/path";
+import {
+  createPrivatePracticeBank,
+  isPrivatePracticeBank,
+} from "../utils/private-practice";
 
 type Section = "today" | "learn" | "practice" | "errors";
 type LearnTab = "topics" | "services" | "blueprint" | "labs";
 type ThemeMode = "light" | "dark";
+type PracticeMode =
+  | "mixed"
+  | "unseen"
+  | "scenario"
+  | "comparison"
+  | "troubleshooting"
+  | "random"
+  | "errors";
+type RandomPracticeScope = "all" | "udemy-exam-1" | "udemy-exam-2";
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
@@ -66,6 +80,15 @@ type LoadState =
 
 const STORAGE_KEY = "aip-c01-progress-v1";
 const THEME_KEY = "aip-c01-theme";
+const PRIVATE_PRACTICE_KEY = "aip-c01-private-practice-v1";
+
+function createRandomSeed() {
+  const seed = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(seed);
+  return seed[0];
+}
+
+const ANSWER_ORDER_SESSION_SEED = createRandomSeed();
 
 const navItems: Array<{
   id: Section;
@@ -180,6 +203,41 @@ function isSameAnswer(selected: string[], correct: string[]) {
   if (selected.length !== correct.length) return false;
   const expected = new Set(correct);
   return selected.every((id) => expected.has(id));
+}
+
+function cleanRationale(rationale: string) {
+  return rationale.replace(/^(Correct|Incorrect)\.\s*/i, "");
+}
+
+function hashString(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function shuffledWithSeed<T>(items: T[], seed: number) {
+  const shuffled = [...items];
+  let state = seed || 0x9e3779b9;
+
+  function nextRandom() {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 0x100000000;
+  }
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(nextRandom() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
 }
 
 function sourceFor(item: { sources?: Source[] }) {
@@ -360,8 +418,34 @@ export function RevisionConsole() {
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
   const [confidence, setConfidence] = useState<1 | 2 | 3 | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [practiceMode, setPracticeMode] = useState("mixed");
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>("mixed");
+  const [randomPracticeScope, setRandomPracticeScope] =
+    useState<RandomPracticeScope>("all");
+  const [randomQuestionSeed, setRandomQuestionSeed] = useState(
+    ANSWER_ORDER_SESSION_SEED,
+  );
+  const [privatePracticeBank, setPrivatePracticeBank] =
+    useState<PrivatePracticeBank | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const saved = window.localStorage.getItem(PRIVATE_PRACTICE_KEY);
+      if (!saved) return;
+      try {
+        const parsed: unknown = JSON.parse(saved);
+        if (!isPrivatePracticeBank(parsed)) {
+          throw new Error("Invalid private practice bank.");
+        }
+        setPrivatePracticeBank(parsed);
+      } catch {
+        setDataNotice(
+          "The saved private practice bank could not be loaded. Import the source files again.",
+        );
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(THEME_KEY);
@@ -556,11 +640,29 @@ export function RevisionConsole() {
     });
   }, [data, depthFilter, domainFilter, search]);
 
+  const allPracticeQuestions = useMemo(
+    () => [
+      ...(data?.questions ?? []),
+      ...(privatePracticeBank?.questions ?? []),
+    ],
+    [data?.questions, privatePracticeBank?.questions],
+  );
+
   const practiceQuestions = useMemo(() => {
     if (!data) return [];
     if (practiceMode === "mixed") return data.questions;
+    if (practiceMode === "random") {
+      const pool =
+        randomPracticeScope === "all"
+          ? privatePracticeBank?.questions ?? []
+          : (privatePracticeBank?.questions ?? []).filter(
+              (question) =>
+                question.practice_section_id === randomPracticeScope,
+            );
+      return shuffledWithSeed(pool, randomQuestionSeed);
+    }
     if (practiceMode === "errors") {
-      return data.questions.filter(
+      return allPracticeQuestions.filter(
         (question) => attemptMap.get(question.id)?.correct === false,
       );
     }
@@ -568,7 +670,15 @@ export function RevisionConsole() {
       return data.questions.filter((question) => !attemptMap.has(question.id));
     }
     return data.questions.filter((question) => question.mode === practiceMode);
-  }, [attemptMap, data, practiceMode]);
+  }, [
+    allPracticeQuestions,
+    attemptMap,
+    data,
+    practiceMode,
+    privatePracticeBank?.questions,
+    randomPracticeScope,
+    randomQuestionSeed,
+  ]);
 
   const activeQuestion =
     practiceQuestions.find((question) => question.id === activeQuestionId) ??
@@ -697,6 +807,39 @@ export function RevisionConsole() {
     } catch (error) {
       setDataNotice(
         error instanceof Error ? error.message : "The JSON file is not valid.",
+      );
+    }
+  }
+
+  async function importPrivatePracticeFiles(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length) return;
+
+    try {
+      const bank = await createPrivatePracticeBank(files);
+      window.localStorage.setItem(
+        PRIVATE_PRACTICE_KEY,
+        JSON.stringify(bank),
+      );
+      setPrivatePracticeBank(bank);
+      setPracticeMode("random");
+      setRandomPracticeScope("all");
+      setRandomQuestionSeed(createRandomSeed());
+      setActiveQuestionId(null);
+      setSelectedAnswers([]);
+      setConfidence(null);
+      setFeedbackOpen(false);
+      setDataNotice(
+        `${bank.questions.length} private practice questions imported. They stay in this browser.`,
+      );
+    } catch (error) {
+      setDataNotice(
+        error instanceof Error
+          ? error.message
+          : "The private practice files could not be imported.",
       );
     }
   }
@@ -918,12 +1061,30 @@ export function RevisionConsole() {
                   setFeedbackOpen(false);
                 }}
                 attempts={attemptMap}
+                privatePracticeBank={privatePracticeBank}
+                randomPracticeScope={randomPracticeScope}
+                onRandomPracticeScope={(scope) => {
+                  setRandomPracticeScope(scope);
+                  setRandomQuestionSeed(createRandomSeed());
+                  setActiveQuestionId(null);
+                  setSelectedAnswers([]);
+                  setConfidence(null);
+                  setFeedbackOpen(false);
+                }}
+                onShuffleRandomPractice={() => {
+                  setRandomQuestionSeed(createRandomSeed());
+                  setActiveQuestionId(null);
+                  setSelectedAnswers([]);
+                  setConfidence(null);
+                  setFeedbackOpen(false);
+                }}
+                onImportPrivatePractice={importPrivatePracticeFiles}
               />
             )}
 
             {!selectedTopic && section === "errors" && (
               <ErrorsScreen
-                data={data}
+                questions={allPracticeQuestions}
                 attempts={attemptMap}
                 onRetry={(questionId) => {
                   setPracticeMode("errors");
@@ -1635,6 +1796,11 @@ function PracticeScreen({
   mode,
   setMode,
   attempts,
+  privatePracticeBank,
+  randomPracticeScope,
+  onRandomPracticeScope,
+  onShuffleRandomPractice,
+  onImportPrivatePractice,
 }: {
   questions: Question[];
   activeQuestion: Question | null;
@@ -1645,26 +1811,59 @@ function PracticeScreen({
   feedbackOpen: boolean;
   onSubmit: () => void;
   onNext: () => void;
-  mode: string;
-  setMode: (mode: string) => void;
+  mode: PracticeMode;
+  setMode: (mode: PracticeMode) => void;
   attempts: Map<string, QuestionAttempt>;
+  privatePracticeBank: PrivatePracticeBank | null;
+  randomPracticeScope: RandomPracticeScope;
+  onRandomPracticeScope: (scope: RandomPracticeScope) => void;
+  onShuffleRandomPractice: () => void;
+  onImportPrivatePractice: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const randomPracticeControls =
+    mode === "random" ? (
+      <PrivatePracticeControls
+        bank={privatePracticeBank}
+        scope={randomPracticeScope}
+        onScope={onRandomPracticeScope}
+        onShuffle={onShuffleRandomPractice}
+        onImport={onImportPrivatePractice}
+      />
+    ) : null;
+
   if (!activeQuestion) {
     return (
       <div className="screen-stack">
         <PracticeModeBar mode={mode} setMode={setMode} />
+        {randomPracticeControls}
         <EmptyState
-          icon={<CheckCircle size={25} />}
-          title={mode === "errors" ? "No errors to retry" : "No questions found"}
+          icon={
+            mode === "random" ? (
+              <Database size={25} />
+            ) : (
+              <CheckCircle size={25} />
+            )
+          }
+          title={
+            mode === "errors"
+              ? "No errors to retry"
+              : mode === "random"
+                ? "Import your private practice exams"
+                : "No questions found"
+          }
           body={
             mode === "errors"
               ? "Complete a mixed or unseen session first."
+              : mode === "random"
+                ? "Select the two Udemy question-answer JSON files above. Add the explanations JSON for detailed rationales."
               : "Choose another practice mode."
           }
           action={
+            mode !== "random" ? (
             <button className="primary-button" onClick={() => setMode("mixed")}>
               Start mixed practice
             </button>
+            ) : undefined
           }
         />
       </div>
@@ -1675,6 +1874,26 @@ function PracticeScreen({
     selectedAnswers,
     activeQuestion.correct_answer_ids,
   );
+  const displayedChoices = shuffledWithSeed(
+    activeQuestion.choices,
+    ANSWER_ORDER_SESSION_SEED ^ hashString(activeQuestion.id),
+  );
+  const correctChoices = displayedChoices.filter((choice) =>
+    activeQuestion.correct_answer_ids.includes(choice.id),
+  );
+  const otherChoices = displayedChoices.filter(
+    (choice) => !activeQuestion.correct_answer_ids.includes(choice.id),
+  );
+  const selectedCorrectCount = selectedAnswers.filter((answerId) =>
+    activeQuestion.correct_answer_ids.includes(answerId),
+  ).length;
+  const feedbackSummary = correct
+    ? activeQuestion.type === "multiple"
+      ? "You selected all correct answers."
+      : "You selected the correct answer."
+    : activeQuestion.type === "multiple"
+      ? `${selectedCorrectCount} of ${activeQuestion.correct_answer_ids.length} correct answers selected.`
+      : "Your selection was not the correct answer.";
   const answeredCount = questions.filter((question) =>
     attempts.has(question.id),
   ).length;
@@ -1682,10 +1901,25 @@ function PracticeScreen({
   return (
     <div className="screen-stack practice-layout">
       <PracticeModeBar mode={mode} setMode={setMode} />
+      {randomPracticeControls}
       <div className="practice-context">
         <div>
-          <StudyDepth importance={activeQuestion.importance} />
-          <span className="mode-label">{activeQuestion.mode}</span>
+          {activeQuestion.private_import ? (
+            <>
+              <span className="private-question-label">Private import</span>
+              <span className="mode-label">
+                {activeQuestion.practice_section_label}
+                {activeQuestion.question_number
+                  ? ` · Question ${activeQuestion.question_number}`
+                  : ""}
+              </span>
+            </>
+          ) : (
+            <>
+              <StudyDepth importance={activeQuestion.importance} />
+              <span className="mode-label">{activeQuestion.mode}</span>
+            </>
+          )}
         </div>
         <span>
           {answeredCount}/{questions.length} answered in this set
@@ -1716,12 +1950,30 @@ function PracticeScreen({
           <p id="answer-instruction" className="visually-hidden">
             Choose the best answer before revealing feedback.
           </p>
-          {activeQuestion.choices.map((choice, index) => {
+          {displayedChoices.map((choice, index) => {
             const selected = selectedAnswers.includes(choice.id);
+            const isCorrectChoice =
+              activeQuestion.correct_answer_ids.includes(choice.id);
+            const resultClass = !feedbackOpen
+              ? ""
+              : isCorrectChoice
+                ? selected
+                  ? "correct-answer"
+                  : "missed-answer"
+                : selected
+                  ? "incorrect-answer"
+                  : "unselected-answer";
+            const resultLabel = !feedbackOpen
+              ? null
+              : isCorrectChoice
+                ? "Correct answer"
+                : selected
+                  ? "Incorrect choice"
+                  : null;
             return (
               <label
                 key={choice.id}
-                className={`answer-choice ${selected ? "selected" : ""}`}
+                className={`answer-choice ${selected ? "selected" : ""} ${resultClass}`}
               >
                 <input
                   type={activeQuestion.type === "multiple" ? "checkbox" : "radio"}
@@ -1743,7 +1995,12 @@ function PracticeScreen({
                 <span className="choice-key">
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span>{choice.text}</span>
+                <span className="choice-copy">
+                  <span>{choice.text}</span>
+                  {resultLabel && (
+                    <span className="answer-status">{resultLabel}</span>
+                  )}
+                </span>
               </label>
             );
           })}
@@ -1794,12 +2051,12 @@ function PracticeScreen({
             </button>
           </div>
         ) : (
-          <div
-            className={`feedback ${correct ? "correct" : "incorrect"}`}
-            role="status"
-            aria-live="polite"
-          >
-            <div className="feedback-title">
+          <div className={`feedback ${correct ? "correct" : "incorrect"}`}>
+            <div
+              className="feedback-title"
+              role="status"
+              aria-live="polite"
+            >
               {correct ? (
                 <CheckCircle size={22} weight="fill" />
               ) : (
@@ -1807,28 +2064,67 @@ function PracticeScreen({
               )}
               <div>
                 <p className="eyebrow">
-                  {correct ? "Correct decision" : "Decision needs correction"}
+                  {correct ? "Correct" : "Review your answer"}
                 </p>
-                <h3>{activeQuestion.explanation}</h3>
+                <h3>{feedbackSummary}</h3>
               </div>
             </div>
-            <div className="rationale-list">
-              {activeQuestion.choices.map((choice, index) => (
-                <div
-                  key={choice.id}
-                  className={
-                    activeQuestion.correct_answer_ids.includes(choice.id)
-                      ? "correct-rationale"
-                      : ""
-                  }
-                >
-                  <strong>{String.fromCharCode(65 + index)}</strong>
-                  <p>{choice.rationale}</p>
-                </div>
-              ))}
-            </div>
+
+            <section
+              className="correct-explanations"
+              aria-labelledby="correct-explanations-title"
+            >
+              <p id="correct-explanations-title" className="section-label">
+                {correctChoices.length > 1
+                  ? "Why these answers are correct"
+                  : "Why this answer is correct"}
+              </p>
+              <div className="explanation-list">
+                {correctChoices.map((choice) => {
+                  const choiceIndex = displayedChoices.findIndex(
+                    (item) => item.id === choice.id,
+                  );
+                  return (
+                    <article key={choice.id}>
+                      <div className="explanation-heading">
+                        <span className="choice-key">
+                          {String.fromCharCode(65 + choiceIndex)}
+                        </span>
+                        <strong>{choice.text}</strong>
+                      </div>
+                      <p>{cleanRationale(choice.rationale)}</p>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+
+            <details className="other-rationales">
+              <summary>Why the other options are wrong</summary>
+              <div className="rationale-list">
+                {otherChoices.map((choice) => {
+                  const choiceIndex = displayedChoices.findIndex(
+                    (item) => item.id === choice.id,
+                  );
+                  return (
+                    <div key={choice.id}>
+                      <strong>{String.fromCharCode(65 + choiceIndex)}</strong>
+                      <p>{cleanRationale(choice.rationale)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
+
             <div className="feedback-actions">
-              <SourceLink source={sourceFor(activeQuestion)} />
+              {activeQuestion.private_import &&
+              !sourceFor(activeQuestion) ? (
+                <span className="private-source-note">
+                  Answer key from your private imported file
+                </span>
+              ) : (
+                <SourceLink source={sourceFor(activeQuestion)} />
+              )}
               <button className="primary-button" onClick={onNext}>
                 Next question
                 <CaretRight size={16} />
@@ -1850,15 +2146,16 @@ function PracticeModeBar({
   mode,
   setMode,
 }: {
-  mode: string;
-  setMode: (mode: string) => void;
+  mode: PracticeMode;
+  setMode: (mode: PracticeMode) => void;
 }) {
-  const modes = [
+  const modes: Array<[PracticeMode, string]> = [
     ["mixed", "Mixed"],
     ["unseen", "Unseen"],
     ["scenario", "Scenarios"],
     ["comparison", "Comparisons"],
     ["troubleshooting", "Troubleshooting"],
+    ["random", "Random exams"],
     ["errors", "Errors"],
   ];
   return (
@@ -1877,16 +2174,128 @@ function PracticeModeBar({
   );
 }
 
+function PrivatePracticeControls({
+  bank,
+  scope,
+  onScope,
+  onShuffle,
+  onImport,
+}: {
+  bank: PrivatePracticeBank | null;
+  scope: RandomPracticeScope;
+  onScope: (scope: RandomPracticeScope) => void;
+  onShuffle: () => void;
+  onImport: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  if (!bank) {
+    return (
+      <section
+        className="private-practice-import"
+        aria-labelledby="private-practice-title"
+      >
+        <div className="private-practice-icon" aria-hidden="true">
+          <Database size={21} />
+        </div>
+        <div>
+          <p className="eyebrow">Private question bank</p>
+          <h2 id="private-practice-title">Import your two practice exams</h2>
+          <p>
+            Select both question-answer JSON files. Include the explanations
+            JSON for detailed answer rationales. The content stays in this
+            browser and is not added to the public site.
+          </p>
+        </div>
+        <label className="primary-button private-import-button">
+          <UploadSimple size={17} />
+          Choose JSON files
+          <input
+            className="visually-hidden"
+            type="file"
+            accept=".json,application/json"
+            multiple
+            onChange={onImport}
+          />
+        </label>
+      </section>
+    );
+  }
+
+  const sectionCount = (sectionId: RandomPracticeScope) =>
+    bank.sections.find((section) => section.id === sectionId)?.question_count ??
+    0;
+  const scopeOptions: Array<{
+    id: RandomPracticeScope;
+    label: string;
+    count: number;
+  }> = [
+    { id: "all", label: "All questions", count: bank.questions.length },
+    {
+      id: "udemy-exam-1",
+      label: "Practice Exam 1",
+      count: sectionCount("udemy-exam-1"),
+    },
+    {
+      id: "udemy-exam-2",
+      label: "Practice Exam 2",
+      count: sectionCount("udemy-exam-2"),
+    },
+  ];
+
+  return (
+    <section className="random-practice-controls" aria-label="Random exam setup">
+      <div className="random-practice-summary">
+        <span>Private bank ready</span>
+        <strong>{bank.questions.length} imported questions</strong>
+        <small>
+          {bank.explanations_loaded
+            ? "Detailed explanations included"
+            : "Answer key only"}
+        </small>
+      </div>
+      <div className="random-scope-options" role="group" aria-label="Question set">
+        {scopeOptions.map((option) => (
+          <button
+            key={option.id}
+            className={scope === option.id ? "active" : ""}
+            aria-pressed={scope === option.id}
+            disabled={!option.count}
+            onClick={() => onScope(option.id)}
+          >
+            <span>{option.label}</span>
+            <strong>{option.count}</strong>
+          </button>
+        ))}
+      </div>
+      <div className="random-practice-actions">
+        <button className="secondary-button" onClick={onShuffle}>
+          <ArrowCounterClockwise size={16} />
+          Shuffle again
+        </button>
+        <label className="text-button private-reimport-button">
+          Replace files
+          <input
+            className="visually-hidden"
+            type="file"
+            accept=".json,application/json"
+            multiple
+            onChange={onImport}
+          />
+        </label>
+      </div>
+    </section>
+  );
+}
+
 function ErrorsScreen({
-  data,
+  questions,
   attempts,
   onRetry,
 }: {
-  data: KnowledgeData;
+  questions: Question[];
   attempts: Map<string, QuestionAttempt>;
   onRetry: (questionId: string) => void;
 }) {
-  const errors = data.questions
+  const errors = questions
     .map((question) => ({ question, attempt: attempts.get(question.id) }))
     .filter(
       (

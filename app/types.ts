@@ -149,6 +149,25 @@ export type Question = {
   service_ids: string[];
   importance: Importance;
   sources: Source[];
+  private_import?: boolean;
+  practice_section_id?: string;
+  practice_section_label?: string;
+  question_number?: number;
+};
+
+export type PrivatePracticeSection = {
+  id: string;
+  label: string;
+  question_count: number;
+};
+
+export type PrivatePracticeBank = {
+  schema_version: 1;
+  imported_at: string;
+  source_label: string;
+  explanations_loaded: boolean;
+  sections: PrivatePracticeSection[];
+  questions: Question[];
 };
 
 export type Lab = {
