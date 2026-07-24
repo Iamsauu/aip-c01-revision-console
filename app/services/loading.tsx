@@ -18,7 +18,7 @@ export default function ServicesLoading() {
             </div>
           ))}
         </div>
-        <span className="visually-hidden">Đang tải nội dung service</span>
+        <span className="visually-hidden">Loading service content</span>
       </div>
     </ServiceShell>
   );

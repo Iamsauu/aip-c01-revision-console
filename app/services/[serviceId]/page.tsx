@@ -20,7 +20,7 @@ export async function generateMetadata({
   if (!service) return {};
   return {
     title: service.exam_label,
-    description: `${service.role} Xem pattern đề thi, điểm mạnh, red flag và từ khóa gợi nhớ cho AIP-C01.`,
+    description: `${service.role} Exam decision patterns, core differentiators, elimination signals, and keywords for AIP-C01.`,
   };
 }
 

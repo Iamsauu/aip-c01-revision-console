@@ -1964,16 +1964,21 @@ function loadServiceCues() {
         "elimination_signals",
         "trigger_keywords",
         "confused_with",
+        "distinction_notes",
       ]) {
         if (!Array.isArray(profile[field])) {
           throw new Error(`${relativePath}/${name} lacks ${field}`);
         }
       }
+      if (typeof profile.standout_feature !== "string" || !profile.standout_feature.trim()) {
+        throw new Error(`${relativePath}/${name} lacks valid standout_feature string`);
+      }
       if (
         profile.exam_patterns.length === 0 ||
         profile.strengths.length === 0 ||
         profile.elimination_signals.length < 2 ||
-        profile.trigger_keywords.length < 3
+        profile.trigger_keywords.length < 3 ||
+        profile.distinction_notes.length === 0
       ) {
         throw new Error(`${relativePath}/${name} has incomplete exam cues`);
       }
@@ -2454,6 +2459,8 @@ function parseServices() {
       elimination_signals: cues.elimination_signals,
       trigger_keywords: cues.trigger_keywords,
       confused_with: cues.confused_with,
+      standout_feature: cues.standout_feature,
+      distinction_notes: cues.distinction_notes,
       comparison_notes: serviceConfusions(name),
       practice_bank_mentions: PRACTICE_BANK_MENTIONS[name]
         ? {

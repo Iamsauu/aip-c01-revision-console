@@ -82,7 +82,11 @@ export function ServiceShell({
                 aria-current={item.active ? "page" : undefined}
                 key={item.label}
               >
-                <Icon size={19} weight={item.active ? "fill" : "regular"} />
+                <Icon
+                  size={19}
+                  weight={item.active ? "fill" : "regular"}
+                  aria-hidden="true"
+                />
                 <span>{item.label}</span>
               </Link>
             );
@@ -92,8 +96,7 @@ export function ServiceShell({
         <div className="services-sidebar-note">
           <strong>Exam-first profiles</strong>
           <span>
-            Từ khóa là tín hiệu theo ngữ cảnh, không phải luật chọn đáp án tuyệt
-            đối.
+            Trigger keywords are contextual decision signals, not absolute selection rules.
           </span>
         </div>
       </aside>
@@ -120,15 +123,19 @@ export function ServiceShell({
             }
             aria-label={
               theme === "light"
-                ? "Chuyển sang giao diện tối"
-                : "Chuyển sang giao diện sáng"
+                ? "Switch to dark theme"
+                : "Switch to light theme"
             }
           >
-            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+            {theme === "light" ? (
+              <Moon size={18} aria-hidden="true" />
+            ) : (
+              <Sun size={18} aria-hidden="true" />
+            )}
           </button>
         </header>
 
-        <main id="services-main" className="services-main" lang="vi">
+        <main id="services-main" className="services-main" lang="en" tabIndex={-1}>
           {children}
         </main>
       </div>
@@ -143,7 +150,11 @@ export function ServiceShell({
               aria-current={item.active ? "page" : undefined}
               key={item.label}
             >
-              <Icon size={20} weight={item.active ? "fill" : "regular"} />
+              <Icon
+                size={20}
+                weight={item.active ? "fill" : "regular"}
+                aria-hidden="true"
+              />
               <span>{item.label}</span>
             </Link>
           );

@@ -6,6 +6,7 @@ import {
   BookOpenText,
   CheckCircle,
   LinkSimple,
+  Sparkle,
   Target,
   WarningCircle,
 } from "@phosphor-icons/react/ssr";
@@ -15,16 +16,16 @@ import { ServiceReviewButton } from "./ServiceReviewButton";
 import { getAssetPath } from "../../utils/path";
 
 const depthLabels: Record<number, string> = {
-  1: "Tier 1: cần hiểu cách triển khai và xử lý lỗi",
-  2: "Tier 2: cần phân biệt theo quyết định kiến trúc",
-  3: "Tier 3: cần nhận diện đúng vai trò",
+  1: "Tier 1: Implement and troubleshoot",
+  2: "Tier 2: Make architecture decisions",
+  3: "Tier 3: Recognize the service",
 };
 
 const modeLabels: Record<string, string> = {
-  scenario: "Tình huống",
-  comparison: "So sánh",
-  troubleshooting: "Xử lý lỗi",
-  recall: "Ghi nhớ",
+  scenario: "Scenario",
+  comparison: "Comparison",
+  troubleshooting: "Troubleshooting",
+  recall: "Recall",
 };
 
 type ServiceNeighbor = Pick<ServiceDetailEntry, "id" | "exam_label">;
@@ -67,11 +68,11 @@ export function ServiceDetailView({
     <article className="service-detail-page">
       <nav className="service-breadcrumb" aria-label="Breadcrumb">
         <Link href={getAssetPath("/services")}>
-          <ArrowLeft size={16} />
+          <ArrowLeft size={16} aria-hidden="true" />
           Services
         </Link>
-        <span>/</span>
-        <span>{service.category}</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{service.category}</span>
       </nav>
 
       <header className="service-detail-hero">
@@ -86,9 +87,9 @@ export function ServiceDetailView({
           {service.current_label &&
             service.current_label !== service.exam_label && (
               <div className="service-rename-note">
-                Tên hiện tại trên AWS: <strong>{service.current_label}</strong>
+                AWS now calls this <strong>{service.current_label}</strong>
                 {service.aliases?.length
-                  ? `, còn gặp dưới tên ${service.aliases.join(", ")}`
+                  ? `. You may also see ${service.aliases.join(", ")}`
                   : ""}
               </div>
             )}
@@ -96,17 +97,17 @@ export function ServiceDetailView({
 
         <aside className="service-detail-summary">
           <div>
-            <span>Độ sâu ôn tập</span>
+            <span>Study Depth</span>
             <strong>{depthLabels[service.depth_tier]}</strong>
           </div>
           {service.practice_bank_mentions && (
             <div>
-              <span>Tín hiệu trong bộ local</span>
+              <span>Practice Question Signal</span>
               <strong>
                 {service.practice_bank_mentions.correct_answer_mentions}/
-                {service.practice_bank_mentions.total_questions} đáp án đúng
+                {service.practice_bank_mentions.total_questions} correct answers
               </strong>
-              <small>Không phải trọng số chính thức của AWS.</small>
+              <small>Based on this study set, not official AWS exam weighting.</small>
             </div>
           )}
           <ServiceReviewButton
@@ -116,20 +117,33 @@ export function ServiceDetailView({
         </aside>
       </header>
 
+      {service.standout_feature && (
+        <section className="service-standout-banner" aria-labelledby="standout-title">
+          <div className="service-standout-header">
+            <Sparkle size={24} weight="fill" aria-hidden="true" />
+            <div>
+              <span className="services-kicker">Core Differentiator</span>
+              <h2 id="standout-title">Why it stands out</h2>
+            </div>
+          </div>
+          <p className="service-standout-text">{service.standout_feature}</p>
+        </section>
+      )}
+
       <section className="service-memory-line" aria-labelledby="memory-title">
         <Target size={24} aria-hidden="true" />
         <div>
-          <p id="memory-title">Nhớ một câu</p>
+          <p id="memory-title">Key Takeaway</p>
           <strong>{service.strengths[0]}</strong>
         </div>
       </section>
 
       <section className="service-keyword-section" aria-labelledby="keyword-title">
         <div className="service-section-heading">
-          <h2 id="keyword-title">Từ khóa dễ liên tưởng</h2>
+          <h2 id="keyword-title">Trigger Keywords</h2>
           <p>
-            Dùng để tạo shortlist. Vẫn phải đối chiếu toàn bộ constraint trước
-            khi chọn đáp án.
+            Use these terms to build a shortlist, then check every scenario
+            constraint before choosing an answer.
           </p>
         </div>
         <div className="service-keywords">
@@ -141,63 +155,69 @@ export function ServiceDetailView({
 
       <div className="service-decision-grid">
         <section className="service-decision-panel patterns">
-          <p className="services-kicker">Pattern phổ biến</p>
-          <h2>Khi nào đề đang dẫn tới service này?</h2>
+          <p className="services-kicker">Decision Trigger Patterns</p>
+          <h2>When should you choose this service?</h2>
           <DetailList items={service.exam_patterns} />
         </section>
 
         <section className="service-decision-panel strengths">
-          <p className="services-kicker">Điểm mạnh</p>
-          <h2>Service này giải quyết tốt điều gì?</h2>
+          <p className="services-kicker">Strengths and Use Cases</p>
+          <h2>What does it do especially well?</h2>
           <DetailList items={service.strengths} />
         </section>
 
         <section className="service-elimination-panel">
           <div>
             <WarningCircle size={24} aria-hidden="true" />
-            <p className="services-kicker">Red flag có điều kiện</p>
-            <h2>Nhìn thấy constraint này thì cân nhắc loại đáp án</h2>
+            <p className="services-kicker">Elimination Signals</p>
+            <h2>When should you rule it out?</h2>
           </div>
           <DetailList items={service.elimination_signals} danger />
           <p>
-            Không có một từ đơn lẻ nào luôn loại được đáp án. Red flag chỉ đúng
-            khi nó mâu thuẫn với yêu cầu chính của tình huống.
+            No single word unconditionally eliminates an option. Red flags apply when
+            they directly conflict with key scenario requirements.
           </p>
         </section>
       </div>
 
-      {(service.confusion_targets.length > 0 ||
-        service.comparison_notes.length > 0) && (
+      {((service.distinction_notes && service.distinction_notes.length > 0) ||
+        service.confusion_targets.length > 0) && (
         <section
           className="service-confusion-section"
-          aria-labelledby="confusion-title"
+          aria-labelledby="distinction-title"
         >
           <div className="service-section-heading">
-            <h2 id="confusion-title">Dễ nhầm với service nào?</h2>
+            <h2 id="distinction-title">How it differs from similar options</h2>
             <p>
-              So sánh theo trách nhiệm kiến trúc, không so theo việc hai dịch vụ
-              có thể cùng xuất hiện trong một solution.
+              Compare responsibilities and operating boundaries before eliminating a
+              similar-looking answer.
             </p>
           </div>
           <div className="service-confusion-layout">
-            <div className="service-confusion-links">
-              {service.confusion_targets.map((target) =>
-                target.id ? (
-                  <Link href={getAssetPath(`/services/${target.id}`)} key={target.label}>
-                    <ArrowsLeftRight size={18} />
-                    <span>{target.label}</span>
-                    <ArrowRight size={16} />
-                  </Link>
-                ) : (
-                  <span key={target.label}>
-                    <ArrowsLeftRight size={18} />
-                    {target.label}
-                  </span>
-                ),
-              )}
-            </div>
-            {service.comparison_notes.length > 0 && (
-              <DetailList items={service.comparison_notes} />
+            {service.confusion_targets.length > 0 && (
+              <div className="service-confusion-links">
+                {service.confusion_targets.map((target) =>
+                  target.id ? (
+                    <Link href={getAssetPath(`/services/${target.id}`)} key={target.label}>
+                      <ArrowsLeftRight size={18} aria-hidden="true" />
+                      <span>{target.label}</span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span key={target.label}>
+                      <ArrowsLeftRight size={18} aria-hidden="true" />
+                      {target.label}
+                    </span>
+                  ),
+                )}
+              </div>
+            )}
+            {service.distinction_notes && service.distinction_notes.length > 0 ? (
+              <DetailList items={service.distinction_notes} />
+            ) : (
+              service.comparison_notes.length > 0 && (
+                <DetailList items={service.comparison_notes} />
+              )
             )}
           </div>
         </section>
@@ -207,13 +227,13 @@ export function ServiceDetailView({
         <section className="service-pairing-section" aria-labelledby="pairing-title">
           <div>
             <LinkSimple size={21} aria-hidden="true" />
-            <h2 id="pairing-title">Thường đi cùng trong câu hỏi local</h2>
+            <h2 id="pairing-title">Commonly Paired Services</h2>
           </div>
           <div className="service-pairing-links">
             {service.commonly_paired_with.map((related) => (
               <Link href={getAssetPath(`/services/${related.id}`)} key={related.id}>
                 <span>{related.exam_label}</span>
-                <small>{related.question_count} câu liên quan</small>
+                <small>{related.question_count} related questions</small>
               </Link>
             ))}
           </div>
@@ -222,10 +242,9 @@ export function ServiceDetailView({
 
       <section className="service-question-section" aria-labelledby="question-title">
         <div className="service-section-heading">
-          <h2 id="question-title">Pattern từ câu hỏi gốc trong site</h2>
+          <h2 id="question-title">Related Exam Questions</h2>
           <p>
-            Các câu dưới đây do knowledge base local tổng hợp và có liên kết trực
-            tiếp tới scope entry này.
+            Questions from this study set that directly test this service.
           </p>
         </div>
         {service.related_questions.length > 0 ? (
@@ -238,9 +257,12 @@ export function ServiceDetailView({
                 </div>
                 <h3>{question.prompt}</h3>
                 <p>{question.explanation}</p>
-                <Link href={getAssetPath(`/?view=practice&question=${question.id}`)}>
-                  Mở trong Practice
-                  <ArrowRight size={16} />
+                <Link
+                  href={getAssetPath(`/?view=practice&question=${question.id}`)}
+                  aria-label={`Open ${question.id} in Practice`}
+                >
+                  Open in Practice
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Link>
               </article>
             ))}
@@ -249,10 +271,10 @@ export function ServiceDetailView({
           <div className="service-question-empty">
             <BookOpenText size={24} aria-hidden="true" />
             <div>
-              <h3>Chưa có câu MCQ public gắn trực tiếp</h3>
+              <h3>No direct public MCQ attached yet</h3>
               <p>
-                Entry này vẫn thuộc scope ôn tập. Dùng pattern và red flag phía
-                trên để nhận diện ở mức tier hiện tại.
+                This entry remains fully in scope for study. Use the patterns and differentiators
+                above for recognition at this tier.
               </p>
             </div>
           </div>
@@ -261,10 +283,9 @@ export function ServiceDetailView({
 
       <section className="service-topic-section" aria-labelledby="topic-title">
         <div className="service-section-heading">
-          <h2 id="topic-title">Kiến thức nền liên quan</h2>
+          <h2 id="topic-title">Related Knowledge Base Topics</h2>
           <p>
-            Các topic này là nguồn dùng để suy ra vai trò, pattern và boundary
-            của service.
+            Core concepts behind this service&apos;s architecture and decision rules.
           </p>
         </div>
         <div className="service-topic-grid">
@@ -279,28 +300,36 @@ export function ServiceDetailView({
 
       <section className="service-source-section" aria-labelledby="source-title">
         <div>
-          <h2 id="source-title">Nguồn AWS chính thức</h2>
+          <h2 id="source-title">Official AWS Documentation</h2>
           <p>
-            Kiểm tra lại Region, quota, model support và pricing trước khi áp
-            dụng cho production.
+            Before production use, verify Region availability, quotas, model support,
+            and pricing.
           </p>
         </div>
         <div>
           {service.sources.map((source) => (
-            <a href={source.url} target="_blank" rel="noreferrer" key={source.url}>
-              <span>{source.title}</span>
-              <ArrowSquareOut size={16} />
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              key={source.url}
+            >
+              <span>
+                {source.title}
+                <span className="visually-hidden"> (opens in a new tab)</span>
+              </span>
+              <ArrowSquareOut size={16} aria-hidden="true" />
             </a>
           ))}
         </div>
       </section>
 
-      <nav className="service-neighbor-nav" aria-label="Service liền kề">
+      <nav className="service-neighbor-nav" aria-label="Adjacent services navigation">
         {previous ? (
           <Link href={getAssetPath(`/services/${previous.id}`)} rel="prev">
-            <ArrowLeft size={17} />
+            <ArrowLeft size={17} aria-hidden="true" />
             <span>
-              <small>Trước</small>
+              <small>Previous</small>
               <strong>{previous.exam_label}</strong>
             </span>
           </Link>
@@ -310,10 +339,10 @@ export function ServiceDetailView({
         {next ? (
           <Link href={getAssetPath(`/services/${next.id}`)} rel="next">
             <span>
-              <small>Tiếp theo</small>
+              <small>Next</small>
               <strong>{next.exam_label}</strong>
             </span>
-            <ArrowRight size={17} />
+            <ArrowRight size={17} aria-hidden="true" />
           </Link>
         ) : (
           <span />

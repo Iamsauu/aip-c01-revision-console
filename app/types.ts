@@ -71,6 +71,8 @@ export type ServiceEntry = {
   use_when?: string[];
   avoid_when?: string[];
   confusions?: string[];
+  standout_feature?: string;
+  distinction_notes?: string[];
   topic_ids?: string[];
   domain_ids?: string[];
   skill_ids?: string[];
@@ -119,6 +121,8 @@ export type ServiceDetailEntry = ServiceEntry & {
   trigger_keywords: string[];
   confused_with: string[];
   comparison_notes: string[];
+  standout_feature: string;
+  distinction_notes: string[];
   practice_bank_mentions: PracticeBankMentions | null;
   related_questions: ServiceQuestionSummary[];
   related_topics: ServiceTopicSummary[];

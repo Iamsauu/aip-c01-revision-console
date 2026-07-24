@@ -7,9 +7,9 @@ import { ServiceShell } from "./components/ServiceShell";
 import { serviceDetails } from "./data";
 
 export const metadata: Metadata = {
-  title: "AWS Services theo pattern đề thi",
+  title: "AWS Services and Features Catalog - AIP-C01",
   description:
-    "Tra cứu từng AWS service, feature và capability theo pattern AIP-C01, điểm mạnh, red flag có điều kiện và từ khóa gợi nhớ.",
+    "Explore AWS services, features, and capabilities by AIP-C01 decision patterns, core differentiators, elimination signals, and trigger keywords.",
 };
 
 export default function ServicesPage() {
@@ -29,11 +29,13 @@ export default function ServicesPage() {
       elimination_signals: service.elimination_signals,
       trigger_keywords: service.trigger_keywords,
       confused_with: service.confused_with,
+      standout_feature: service.standout_feature,
+      distinction_notes: service.distinction_notes,
       practice_bank_mentions: service.practice_bank_mentions,
     }),
   );
   return (
-    <ServiceShell title="Services">
+    <ServiceShell title="AWS Services Catalog">
       <ServiceCatalog services={catalogServices} />
     </ServiceShell>
   );

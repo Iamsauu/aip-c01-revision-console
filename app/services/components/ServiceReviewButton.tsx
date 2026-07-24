@@ -71,11 +71,11 @@ export function ServiceReviewButton({
       disabled={reviewed}
     >
       {reviewed ? (
-        <CheckCircle size={18} weight="fill" />
+        <CheckCircle size={18} weight="fill" aria-hidden="true" />
       ) : (
-        <Check size={18} />
+        <Check size={18} aria-hidden="true" />
       )}
-      {reviewed ? "Đã ôn" : "Đánh dấu đã ôn"}
+      {reviewed ? "Reviewed" : "Mark as reviewed"}
     </button>
   );
 }

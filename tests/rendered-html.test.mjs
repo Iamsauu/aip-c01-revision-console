@@ -48,6 +48,7 @@ test("JSON content represents the full published scope snapshot", async () => {
     topicsPayload,
     servicesPayload,
     serviceDetailsPayload,
+    questionsPayload,
     labsPayload,
   ] = await Promise.all([
       readJson("certification.json"),
@@ -55,6 +56,7 @@ test("JSON content represents the full published scope snapshot", async () => {
       readJson("topics.json"),
       readJson("services.json"),
       readJson("service-details.json"),
+      readJson("questions.json"),
       readJson("labs.json"),
     ]);
 
@@ -62,6 +64,7 @@ test("JSON content represents the full published scope snapshot", async () => {
   const topics = topicsPayload.items;
   const services = servicesPayload.items;
   const serviceDetails = serviceDetailsPayload.items;
+  const questions = questionsPayload.items;
   const labs = labsPayload.items;
   const tasks = domains.flatMap((domain) => domain.tasks);
   const skills = tasks.flatMap((task) => task.skills);
@@ -103,6 +106,34 @@ test("JSON content represents the full published scope snapshot", async () => {
       service.trigger_keywords.length >= 3,
       `${service.id} lacks trigger keywords`,
     );
+    assert.ok(service.standout_feature, `${service.id} lacks a differentiator`);
+    assert.ok(
+      service.distinction_notes.length >= 1,
+      `${service.id} lacks distinction notes`,
+    );
+  }
+
+  const serviceIds = new Set(serviceDetails.map((service) => service.id));
+  const questionIds = new Set(questions.map((question) => question.id));
+  for (const service of serviceDetails) {
+    for (const target of service.confusion_targets) {
+      assert.ok(
+        target.id && serviceIds.has(target.id),
+        `${service.id} links to an unknown comparison target`,
+      );
+    }
+    for (const related of service.commonly_paired_with) {
+      assert.ok(
+        serviceIds.has(related.id),
+        `${service.id} links to an unknown paired service`,
+      );
+    }
+    for (const question of service.related_questions) {
+      assert.ok(
+        questionIds.has(question.id),
+        `${service.id} links to an unknown practice question`,
+      );
+    }
   }
 });
 
@@ -110,15 +141,26 @@ test("services catalog and detail routes render as separate pages", async () => 
   const catalogResponse = await render("/services");
   assert.equal(catalogResponse.status, 200);
   const catalogHtml = await catalogResponse.text();
-  assert.match(catalogHtml, /Nhìn constraint, chọn đúng service/);
+  assert.match(
+    catalogHtml,
+    /Match scenario constraints to the right AWS service/,
+  );
   assert.match(catalogHtml, /Bedrock Guardrails/);
+  assert.doesNotMatch(catalogHtml, /[\u0102\u0110\u0128\u0168\u01A0\u01AF\u1EA0-\u1EF9]/u);
 
   const detailResponse = await render("/services/service-bedrock-guardrails");
   assert.equal(detailResponse.status, 200);
   const detailHtml = await detailResponse.text();
   assert.match(detailHtml, /<title>Bedrock Guardrails \| AIP-C01 Revision Console<\/title>/i);
-  assert.match(detailHtml, /Red flag có điều kiện/);
+  assert.match(detailHtml, /When should you rule it out/);
   assert.match(detailHtml, /prompt attack detection/);
+  assert.match(detailHtml, /aria-label="Adjacent services navigation"/);
+  assert.match(detailHtml, /opens in a new tab/);
+  assert.match(detailHtml, /rel="noopener noreferrer"/);
+  assert.doesNotMatch(detailHtml, /[\u0102\u0110\u0128\u0168\u01A0\u01AF\u1EA0-\u1EF9]/u);
+  for (const anchor of detailHtml.matchAll(/<a\b[^>]*>/g)) {
+    assert.match(anchor[0], /\shref="[^"]+"/);
+  }
 
   const missingResponse = await render("/services/service-does-not-exist");
   assert.equal(missingResponse.status, 404);

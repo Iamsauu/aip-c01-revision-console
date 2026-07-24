@@ -5,15 +5,15 @@ import { getAssetPath } from "../../utils/path";
 
 export default function ServiceNotFound() {
   return (
-    <ServiceShell title="Không tìm thấy">
+    <ServiceShell title="Service not found">
       <div className="service-not-found">
-        <MagnifyingGlass size={30} />
-        <h1>Không tìm thấy service này</h1>
+        <MagnifyingGlass size={30} aria-hidden="true" />
+        <h1>We could not find that service</h1>
         <p>
-          URL có thể đã sai hoặc scope entry đã được đổi tên. Quay lại catalog để
-          tìm theo tên AWS hiện tại hoặc exam label.
+          The URL may be incorrect, or AWS may have renamed the service. Search
+          the catalog using its current name or exam label.
         </p>
-        <Link href={getAssetPath("/services")}>Về trang Services</Link>
+        <Link href={getAssetPath("/services")}>Back to Services</Link>
       </div>
     </ServiceShell>
   );

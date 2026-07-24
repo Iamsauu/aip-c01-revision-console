@@ -30,13 +30,15 @@ export type ServiceCatalogEntry = Pick<
   | "elimination_signals"
   | "trigger_keywords"
   | "confused_with"
+  | "standout_feature"
+  | "distinction_notes"
   | "practice_bank_mentions"
 >;
 
 const depthLabels: Record<number, string> = {
-  1: "Tier 1: triển khai",
-  2: "Tier 2: quyết định kiến trúc",
-  3: "Tier 3: nhận diện",
+  1: "Tier 1: Implementation & Troubleshooting",
+  2: "Tier 2: Architectural Decisions",
+  3: "Tier 3: Service Recognition",
 };
 
 function categoryId(category: string) {
@@ -69,14 +71,14 @@ function ServiceCatalogCard({
         <span>Tier {service.depth_tier}</span>
         {reviewed && (
           <span className="service-card-reviewed">
-            <CheckCircle size={14} weight="fill" />
-            Đã ôn
+            <CheckCircle size={14} weight="fill" aria-hidden="true" />
+            Reviewed
           </span>
         )}
       </div>
       <h3>{service.exam_label}</h3>
-      <p>{service.strengths[0]}</p>
-      <div className="service-card-signals" aria-label="Từ khóa gợi nhớ">
+      <p>{service.standout_feature || service.strengths[0]}</p>
+      <div className="service-card-signals" aria-label="Trigger keywords">
         {service.trigger_keywords.slice(0, 3).map((keyword) => (
           <code key={keyword}>{keyword}</code>
         ))}
@@ -86,8 +88,8 @@ function ServiceCatalogCard({
         <span>{service.elimination_signals[0]}</span>
       </div>
       <span className="service-card-open">
-        Mở trang chi tiết
-        <ArrowRight size={16} />
+        View details
+        <ArrowRight size={16} aria-hidden="true" />
       </span>
     </Link>
   );
@@ -106,7 +108,7 @@ export function ServiceCatalog({
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      setReviewedIds(readReviewedIds());
+      setReviewedIds(readReviewedServiceIds());
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -126,6 +128,8 @@ export function ServiceCatalog({
         service.category,
         service.role,
         service.technical_boundary,
+        service.standout_feature,
+        ...(service.distinction_notes ?? []),
         ...service.exam_patterns,
         ...service.strengths,
         ...service.elimination_signals,
@@ -189,16 +193,16 @@ export function ServiceCatalog({
     <div className="service-catalog-page">
       <section className="service-catalog-hero">
         <div>
-          <p className="services-kicker">Ôn theo tín hiệu đề thi</p>
-          <h1>Nhìn constraint, chọn đúng service.</h1>
+          <p className="services-kicker">Exam Decision Signals</p>
+          <h1>Match scenario constraints to the right AWS service</h1>
           <p>
-            Mỗi scope entry có pattern, điểm mạnh, red flag có điều kiện và các
-            từ khóa dễ liên tưởng khi làm bài.
+            Use decision patterns, differentiators, elimination signals, and
+            trigger words to choose the best answer.
           </p>
         </div>
-        <dl className="service-scope-counts" aria-label="Phạm vi service">
+        <dl className="service-scope-counts" aria-label="Service scope summary">
           <div>
-            <dt>Tổng scope</dt>
+            <dt>Total Entries</dt>
             <dd>{services.length}</dd>
           </div>
           <div>
@@ -218,10 +222,10 @@ export function ServiceCatalog({
 
       <section className="service-signal-section" aria-labelledby="signal-title">
         <div className="service-section-heading">
-          <h2 id="signal-title">Tín hiệu mạnh trong bộ 150 câu local</h2>
+          <h2 id="signal-title">High-signal services in this practice bank</h2>
           <p>
-            Đây là số lần xuất hiện trong đáp án đúng của bộ luyện tập, không
-            phải trọng số chính thức từ AWS.
+            The most frequent correct answers across 150 practice questions. This
+            is not official AWS exam weighting.
           </p>
         </div>
         <div className="service-signal-rail">
@@ -237,30 +241,30 @@ export function ServiceCatalog({
         </div>
       </section>
 
-      <section className="service-catalog-controls" aria-label="Lọc services">
+      <section className="service-catalog-controls" aria-label="Filter services">
         <label className="service-search">
           <MagnifyingGlass size={19} aria-hidden="true" />
-          <span className="visually-hidden">Tìm service</span>
+          <span className="visually-hidden">Search services</span>
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Tìm service, pattern, từ khóa hoặc distractor"
+            placeholder="Search service, pattern, keyword, or distractor..."
           />
           {query && (
-            <button type="button" onClick={() => setQuery("")} aria-label="Xóa tìm kiếm">
+            <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
               <X size={16} />
             </button>
           )}
         </label>
 
         <label className="service-select">
-          <span>Nhóm</span>
+          <span>Category</span>
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
           >
-            <option value="All">Tất cả nhóm</option>
+            <option value="All">All Categories</option>
             {categories.map((item) => (
               <option value={item} key={item}>
                 {item}
@@ -270,9 +274,9 @@ export function ServiceCatalog({
         </label>
 
         <label className="service-select">
-          <span>Độ sâu</span>
+          <span>Depth Tier</span>
           <select value={depth} onChange={(event) => setDepth(event.target.value)}>
-            <option value="All">Tất cả tier</option>
+            <option value="All">All Tiers</option>
             <option value="1">{depthLabels[1]}</option>
             <option value="2">{depthLabels[2]}</option>
             <option value="3">{depthLabels[3]}</option>
@@ -280,12 +284,12 @@ export function ServiceCatalog({
         </label>
 
         <label className="service-select">
-          <span>Loại entry</span>
+          <span>Entry Type</span>
           <select
             value={entityType}
             onChange={(event) => setEntityType(event.target.value)}
           >
-            <option value="All">Tất cả loại</option>
+            <option value="All">All Types</option>
             <option value="service">Service</option>
             <option value="feature">Feature</option>
             <option value="capability">Capability</option>
@@ -295,14 +299,15 @@ export function ServiceCatalog({
 
       <div className="service-result-line">
         <p>
-          <strong>{filtered.length}</strong> kết quả
+          <strong>{filtered.length}</strong>{" "}
+          {filtered.length === 1 ? "result" : "results"}
         </p>
         {(query ||
           category !== "All" ||
           depth !== "All" ||
           entityType !== "All") && (
           <button type="button" onClick={clearFilters}>
-            Xóa toàn bộ bộ lọc
+            Clear all filters
           </button>
         )}
       </div>
@@ -334,10 +339,10 @@ export function ServiceCatalog({
       ) : (
         <div className="service-catalog-empty">
           <MagnifyingGlass size={28} />
-          <h2>Không tìm thấy service phù hợp</h2>
-          <p>Thử một từ khóa ngắn hơn hoặc xóa các bộ lọc đang bật.</p>
+          <h2>No matching services found</h2>
+          <p>Try adjusting your search terms or clearing active filters.</p>
           <button type="button" onClick={clearFilters}>
-            Xóa bộ lọc
+            Clear filters
           </button>
         </div>
       )}
